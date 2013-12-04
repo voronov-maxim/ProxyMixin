@@ -4,6 +4,7 @@
         Title="MainWindow" Height="350" Width="525">
     <StackPanel>
         <TextBox Text="{Binding TestProperty1, UpdateSourceTrigger=PropertyChanged}"/>
+        <TextBlock Text="{Binding DependentProperty}"/>
         <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" ItemsSource="{Binding Rows}" >
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Column 1" Binding="{Binding Col1}"></DataGridTextColumn>

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
 
 namespace ProxyMixin.Mixins
 {
@@ -21,6 +23,19 @@ namespace ProxyMixin.Mixins
             }
         }
 
+        internal static void BasePropertyChangedHandler(Object sender, PropertyChangedEventArgs e)
+        {
+            var proxy = (IDynamicProxy)sender;
+            foreach (Object mixin in proxy.Mixins)
+            {
+                var propertyChangedMixin = mixin as PropertyChangedMixin<T>;
+                if (propertyChangedMixin != null)
+                {
+                    propertyChangedMixin.OnPropertyChanged(e);
+                    return;
+                }
+            }
+        }
         private static MixinProperty[] GetMixinProperties(String isChangedPropertyName)
         {
             if (String.IsNullOrEmpty(isChangedPropertyName))
@@ -30,14 +45,19 @@ namespace ProxyMixin.Mixins
         }
         protected void OnPropertyChanged(String propertyName)
         {
+            OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
+        }
+        private void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
             if (_propertyChanged != null)
-                _propertyChanged(base.ProxyObject, new PropertyChangedEventArgs(propertyName));
+                _propertyChanged(base.ProxyObject, e);
         }
         private void OnPropertyIsChangedChanged()
         {
             if (_isChangedPropertyName != null)
                 OnPropertyChanged(_isChangedPropertyName);
         }
+
         protected void SetIsChanged(bool value)
         {
             if (_isChanged == value)

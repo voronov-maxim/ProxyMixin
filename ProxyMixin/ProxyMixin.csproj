@@ -44,6 +44,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChangeTrackingFactory.cs" />
+    <Compile Include="Mappers\ArrayCopyProxyMapper.cs" />
+    <Compile Include="Mappers\PropertyChangedProxyMapper.cs" />
     <Compile Include="Mixins\ChangeTrackingMixin.cs" />
     <Compile Include="Mixins\DynamicMixin.cs" />
     <Compile Include="ProxyBuilder.cs" />
@@ -52,7 +54,7 @@
     <Compile Include="Mixins\ListChangeTrackingMixin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Mixins\PropertyChangedMixin.cs" />
-    <Compile Include="ProxyMapper.cs" />
+    <Compile Include="Mappers\ProxyMapper.cs" />
     <Compile Include="ProxyBuilderHelper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

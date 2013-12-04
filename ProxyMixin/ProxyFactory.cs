@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProxyMixin.Mappers;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;

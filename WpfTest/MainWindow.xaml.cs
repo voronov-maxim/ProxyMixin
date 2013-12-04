@@ -72,25 +72,45 @@ namespace WpfTest
         }
     }
 
-    public class TestViewModel
+    public class TestViewModel : INotifyPropertyChanged
     {
+        private string _testProperty1;
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            if (PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public string DependentProperty
+        {
+            get
+            {
+                return "hello " + _testProperty1;
+            }
+        }
         public string TestProperty1
         {
-            get;
-            set;
+            get
+            {
+                return _testProperty1;
+            }
+            set
+            {
+                _testProperty1 = value;
+                OnPropertyChanged("DependentProperty");
+            }
         }
         public List<Row> Rows
         {
             get;
             set;
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
     public class Row
     {
-        public Row()
-        {
-
-        }
         public string Col1
         {
             get;

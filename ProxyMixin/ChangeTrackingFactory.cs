@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Windows.Forms;
 
 using ProxyMixin.Mixins;
+using ProxyMixin.Mappers;
 
 namespace ProxyMixin
 {
@@ -57,7 +58,7 @@ namespace ProxyMixin
             T proxy = CreateList<T>(wrappedObject, isChangedPropertyName, parent);
             if (proxy == null)
             {
-                var proxyMapper = new ArrayCopyProxyMapper<T>();
+                var proxyMapper = new PropertyChangedProxyMapper<T>();
                 Object[] mixins = { new Mixins.ChangeTrackingMixin<T>(this, isChangedPropertyName, parent) };
                 proxy = base.CreateCore(wrappedObject, proxyMapper, mixins);
             }
@@ -75,7 +76,7 @@ namespace ProxyMixin
                 return default(T);
 
             Type mixinType = typeof(ListChangeTrackingMixin<,>).MakeGenericType(typeof(T), k);
-            var proxyMapper = new ArrayCopyProxyMapper<T>();
+            var proxyMapper = new PropertyChangedProxyMapper<T>();
             Object[] mixins = { (IDynamicMixin)Activator.CreateInstance(mixinType, this, isChangedPropertyName, parent) };
             return base.CreateCore(wrappedObject, proxyMapper, mixins);
         }

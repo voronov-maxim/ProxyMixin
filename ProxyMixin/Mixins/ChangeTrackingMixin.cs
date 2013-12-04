@@ -58,7 +58,7 @@ namespace ProxyMixin.Mixins
         }
         protected override Object GetValue(PropertyDescriptor propertyDescriptor)
         {
-            Object value = propertyDescriptor.GetValue(base.ProxyObject.WrappedObject);
+            Object value = propertyDescriptor.GetValue(base.ProxyObject);
             return Factory.Create(value, this);
         }
         public virtual void RejectChanges()
@@ -67,7 +67,7 @@ namespace ProxyMixin.Mixins
         }
         protected override void SetValue(PropertyDescriptor propertyDescriptor, Object value)
         {
-            propertyDescriptor.SetValue(base.ProxyObject.WrappedObject, value);
+            propertyDescriptor.SetValue(base.ProxyObject, value);
             base.OnPropertyChanged(propertyDescriptor.Name);
             AddChangedStates(ChangedStates.Self);
         }
@@ -76,9 +76,9 @@ namespace ProxyMixin.Mixins
             if ((ChangedStates & ChangedStates.Self) != ChangedStates.None)
             {
                 if (acceptChanges)
-                    base.ProxyObject.MemberwiseMapFromWrappedObject();
-                else
                     base.ProxyObject.MemberwiseMapToWrappedObject();
+                else
+                    base.ProxyObject.MemberwiseMapFromWrappedObject();
                 base.OnPropertyChanged(null);
             }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProxyMixin.Mappers;
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -44,12 +45,6 @@ namespace ProxyMixin
         internal static T CreateProxy<T>(Type proxyType, T wrappedObject, Object[] mixins)
         {
             var proxy = (T)FormatterServices.GetUninitializedObject(proxyType);
-            foreach (Object mixin in mixins)
-            {
-                var dynamicMixin = mixin as IDynamicMixin;
-                if (dynamicMixin != null)
-                    dynamicMixin.ProxyObject = (IDynamicProxy)proxy;
-            }
             FieldInfo mixinsField = proxyType.GetField("mixins", BindingFlags.Instance | BindingFlags.NonPublic);
             mixinsField.SetValue(proxy, mixins);
 
@@ -57,6 +52,12 @@ namespace ProxyMixin
             fieldInfo.SetValue(proxy, wrappedObject);
             ((IDynamicProxy)proxy).MemberwiseMapFromWrappedObject();
 
+            foreach (Object mixin in mixins)
+            {
+                var dynamicMixin = mixin as IDynamicMixin;
+                if (dynamicMixin != null)
+                    dynamicMixin.ProxyObject = (IDynamicProxy)proxy;
+            }
             return proxy;
         }
         internal Type CreateType<T>(ProxyMapper<T> proxyMapper, params Object[] mixins)

@@ -1,14 +1,38 @@
-﻿using System;
+﻿using ProxyMixin;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace ConsoleTest
 {
-    public class Test
+    public class Test : INotifyPropertyChanged
     {
-        public String StringProperty
+        private String _stringProperty1;
+        private PropertyChangedEventHandler _propertyChanged;
+
+        public String StringProperty1
+        {
+            get
+            {
+                return _stringProperty1;
+            }
+            set
+            {
+                _stringProperty1 = value;
+                if (_propertyChanged != null)
+                    _propertyChanged(this, new PropertyChangedEventArgs("StringProperty2"));
+            }
+        }
+        public String StringProperty2
         {
             get;
             set;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged
+        {
+            add { _propertyChanged += value; }
+            remove { _propertyChanged -= value; }
         }
     }
 
@@ -17,26 +41,28 @@ namespace ConsoleTest
         static void Main(String[] args)
         {
             var test = new Test();
+            test.PropertyChanged += test_PropertyChanged;
             var factory1 = new ProxyMixin.ChangeTrackingFactory();
             var proxy1 = factory1.Create(test, "IsChanged");
+            test.PropertyChanged+=test_PropertyChanged2;
+            ((IDynamicProxy)proxy1).MemberwiseMapToWrappedObject();
 
-            var factory2 = new ProxyMixin.ChangeTrackingFactory();
-            var proxy2 = factory2.Create(test, "IsChanged");
+            ((INotifyPropertyChanged)proxy1).PropertyChanged += proxy1_PropertyChanged;
+            proxy1.StringProperty1 = "test value";
 
-            try
-            {
-                Test1();
-            }
-            catch (Exception e)
-            {
-                var st = new System.Diagnostics.StackTrace(e);
-                var frame = st.GetFrames()[0];
-                var off = frame.GetILOffset();
-            }
+            //var factory2 = new ProxyMixin.ChangeTrackingFactory();
+            //var proxy2 = factory2.Create(test, "IsChanged");
         }
-        public static void Test1()
+
+        static void test_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            throw new Exception();
+        }
+        static void test_PropertyChanged2(object sender, PropertyChangedEventArgs e)
+        {
+        }
+
+        static void proxy1_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
         }
     }
 }

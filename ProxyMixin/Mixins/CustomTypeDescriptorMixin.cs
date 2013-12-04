@@ -8,7 +8,7 @@ namespace ProxyMixin.Mixins
 {
     public class CustomTypeDescriptorMixin<T> : IDynamicMixin, ICustomTypeDescriptor
     {
-        protected class MixinProperty
+        protected sealed class MixinProperty
         {
             private readonly String _mixinPropertyName;
             private readonly String _wrappedPropertyName;
@@ -92,6 +92,7 @@ namespace ProxyMixin.Mixins
         }
 
         private readonly PropertyDescriptorCollection _fakePropertyDescriptors;
+        private IDynamicProxy _proxyObject;
 
         public CustomTypeDescriptorMixin()
             : this(null)
@@ -131,6 +132,12 @@ namespace ProxyMixin.Mixins
         {
             return propertyDescriptor.GetValue(ProxyObject);
         }
+        protected virtual void SetValue(PropertyDescriptor propertyDescriptor, Object value)
+        {
+            propertyDescriptor.SetValue(ProxyObject, value);
+            propertyDescriptor.SetValue(ProxyObject.WrappedObject, value);
+        }
+
         public virtual Type[] NoImplementInterfaces
         {
             get
@@ -138,16 +145,16 @@ namespace ProxyMixin.Mixins
                 return Type.EmptyTypes;
             }
         }
-        protected virtual void SetValue(PropertyDescriptor propertyDescriptor, Object value)
-        {
-            propertyDescriptor.SetValue(ProxyObject, value);
-            propertyDescriptor.SetValue(ProxyObject.WrappedObject, value);
-        }
-
         public IDynamicProxy ProxyObject
         {
-            get;
-            set;
+            get
+            {
+                return _proxyObject;
+            }
+            set
+            {
+                _proxyObject = value;
+            }
         }
 
         AttributeCollection ICustomTypeDescriptor.GetAttributes()
