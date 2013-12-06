@@ -60,9 +60,12 @@ namespace ProxyMixin
                 }
             }
         }
+
+        private static int _counter;
         private static ModuleBuilder _moduleBuilder;
         private readonly ProxyBuilder _proxyBuilder;
         private static readonly Dictionary<ProxyTypeDef, Type> _typeProxyCache = new Dictionary<ProxyTypeDef, Type>();
+        private static readonly Dictionary<Type, Delegate> _interfaceInvokerCache = new Dictionary<Type, Delegate>();
 
         public ProxyFactory()
         {
@@ -102,7 +105,28 @@ namespace ProxyMixin
             Object[] mixins = { new Mixins.PropertyChangedMixin<T>(isChangedPropertyName) };
             return new ProxyFactory().CreateCore(wrappedObject, proxyMapper, mixins);
         }
-        internal static TypeBuilder GetTypeBuilder<T>()
+        public static I GetMethodInvoker<T, I>(T interfaceObject)
+            where T : I
+            where I : class
+        {
+            Func<I, I> ctor;
+            Delegate @delegate;
+            if (_interfaceInvokerCache.TryGetValue(typeof(T), out @delegate))
+                ctor = (Func<I, I>)@delegate;
+            else
+            {
+                ModuleBuilder moduleBuilder = GetModuleBuilder();
+                String name = "Invoker" + typeof(I).Name;
+                TypeBuilder typeBuilder = moduleBuilder.DefineType(name, TypeAttributes.Class | TypeAttributes.Sealed, null, new Type[] { typeof(I) });
+
+                var interfaceInvokerBuilder = new InterfaceInvokerBuilder<T, I>(typeBuilder);
+                ctor = interfaceInvokerBuilder.CreateType();
+                _interfaceInvokerCache[typeof(T)] = ctor;
+            }
+
+            return ctor(interfaceObject);
+        }
+        private static ModuleBuilder GetModuleBuilder()
         {
             if (_moduleBuilder == null)
             {
@@ -110,9 +134,13 @@ namespace ProxyMixin
                 AssemblyBuilder asmBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.Run);
                 _moduleBuilder = asmBuilder.DefineDynamicModule(asmName.Name);
             }
-
-            String name = typeof(T).Name + "(" + (_typeProxyCache.Count + 1).ToString() + ")";
-            return _moduleBuilder.DefineType(name, TypeAttributes.Class, typeof(T));
+            return _moduleBuilder;
+        }
+        internal static TypeBuilder GetTypeBuilder<T>()
+        {
+            ModuleBuilder moduleBuilder = GetModuleBuilder();
+            String name = "Proxy" + typeof(T).Name + "(" + (++_counter).ToString() + ")";
+            return moduleBuilder.DefineType(name, TypeAttributes.Class | TypeAttributes.Sealed, typeof(T));
         }
     }
 }

@@ -8,6 +8,46 @@ namespace ProxyMixin
 {
     internal static class ProxyBuilderHelper
     {
+        public static void DefineEvent(TypeBuilder typeBuilder, EventInfo eventInfo,
+            MethodBuilder addMethodBuilder, MethodBuilder removeMethodBuilder)
+        {
+            String eventName = eventInfo.DeclaringType.FullName + "." + eventInfo.Name;
+            EventBuilder eventBuilder = typeBuilder.DefineEvent(eventName, EventAttributes.None, eventInfo.EventHandlerType);
+
+            eventBuilder.SetAddOnMethod(addMethodBuilder);
+            eventBuilder.SetRemoveOnMethod(removeMethodBuilder);
+        }
+        public static void DefineInterface(TypeBuilder typeBuilder, Type interfaceType, Type implementType,
+            Action<ILGenerator, MethodInfo, MethodInfo> ilGenerator)
+        {
+            InterfaceMapping mapping = implementType.GetInterfaceMap(interfaceType);
+            for (int i = 0; i < mapping.InterfaceMethods.Length; i++)
+                mapping.TargetMethods[i] = ProxyBuilderHelper.DefineMethod(typeBuilder, mapping.InterfaceMethods[i],
+                    il => ilGenerator(il, mapping.InterfaceMethods[i], mapping.TargetMethods[i]));
+
+            foreach (PropertyInfo propertyInfo in interfaceType.GetProperties())
+            {
+                MethodBuilder getMethodBuilder = null;
+                MethodInfo getMethodInfo = propertyInfo.GetGetMethod();
+                if (getMethodInfo != null)
+                    getMethodBuilder = (MethodBuilder)GetTargetMethodInfo(mapping, getMethodInfo);
+
+                MethodBuilder setMethodBuilder = null;
+                MethodInfo setMethodInfo = propertyInfo.GetSetMethod();
+                if (setMethodInfo != null)
+                    setMethodBuilder = (MethodBuilder)GetTargetMethodInfo(mapping, setMethodInfo);
+
+                ProxyBuilderHelper.DefineProperty(typeBuilder, propertyInfo, getMethodBuilder, setMethodBuilder);
+            }
+
+            foreach (EventInfo eventInfo in interfaceType.GetEvents())
+            {
+                var addMethodBuilder = (MethodBuilder)GetTargetMethodInfo(mapping, eventInfo.GetAddMethod());
+                var removeMethodBuilder = (MethodBuilder)GetTargetMethodInfo(mapping, eventInfo.GetRemoveMethod());
+                ProxyBuilderHelper.DefineEvent(typeBuilder, eventInfo, addMethodBuilder, removeMethodBuilder);
+            }
+
+        }
         public static MethodBuilder DefineMethod(TypeBuilder typeBuilder, MethodInfo methodInfo, Action<ILGenerator> ilGenerator)
         {
             String methodName = methodInfo.DeclaringType.FullName + "." + methodInfo.Name;
@@ -36,19 +76,13 @@ namespace ProxyMixin
             il.Emit(OpCodes.Ldfld, fieldBuilder);
             il.Emit(OpCodes.Ret);
         }
-        public static void GenerateStandardMethod(ILGenerator il, MethodInfo stub, FieldBuilder mixinsField, int index)
+        private static MethodInfo GetTargetMethodInfo(InterfaceMapping mapping, MethodInfo interfaceMethod)
         {
-            il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Ldfld, mixinsField);
-            il.Emit(OpCodes.Ldc_I4, index);
-            il.Emit(OpCodes.Ldelem_Ref);
+            for (int i = 0; i < mapping.InterfaceMethods.Length; i++)
+                if (mapping.InterfaceMethods[i] == interfaceMethod)
+                    return mapping.TargetMethods[i];
 
-            ParameterInfo[] stubParameterInfo = stub.GetParameters();
-            for (int i = 0; i < stubParameterInfo.Length; i++)
-                il.Emit(OpCodes.Ldarg, i + 1);
-
-            il.Emit(OpCodes.Call, stub);
-            il.Emit(OpCodes.Ret);
+            throw new InvalidOperationException("mixin target method not found");
         }
     }
 }

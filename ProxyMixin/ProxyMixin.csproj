@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChangeTrackingFactory.cs" />
+    <Compile Include="InterfaceInvokerBuilder.cs" />
     <Compile Include="Mappers\ArrayCopyProxyMapper.cs" />
     <Compile Include="Mappers\PropertyChangedProxyMapper.cs" />
     <Compile Include="Mixins\ChangeTrackingMixin.cs" />

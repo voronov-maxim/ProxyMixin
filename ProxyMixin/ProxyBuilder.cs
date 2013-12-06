@@ -71,15 +71,6 @@ namespace ProxyMixin
 
             return proxyType;
         }
-        private static void DefineEvent(TypeBuilder typeBuilder, EventInfo eventInfo,
-            MethodBuilder addMethodBuilder, MethodBuilder removeMethodBuilder)
-        {
-            String eventName = eventInfo.DeclaringType.FullName + "." + eventInfo.Name;
-            EventBuilder eventBuilder = typeBuilder.DefineEvent(eventName, EventAttributes.None, eventInfo.EventHandlerType);
-
-            eventBuilder.SetAddOnMethod(addMethodBuilder);
-            eventBuilder.SetRemoveOnMethod(removeMethodBuilder);
-        }
         private static void DefineMixin(TypeBuilder typeBuilder, Object mixin, FieldBuilder mixinsField, int index)
         {
             Type mixinType = mixin.GetType();
@@ -96,44 +87,25 @@ namespace ProxyMixin
                     continue;
 
                 typeBuilder.AddInterfaceImplementation(interfaceType);
-                InterfaceMapping mapping = mixinType.GetInterfaceMap(interfaceType);
-                for (int i = 0; i < mapping.InterfaceMethods.Length; i++)
-                {
-                    MethodInfo stub = mapping.TargetMethods[i].IsPrivate ? mapping.InterfaceMethods[i] : mapping.TargetMethods[i];
-                    mapping.TargetMethods[i] = ProxyBuilderHelper.DefineMethod(typeBuilder, mapping.InterfaceMethods[i],
-                        il => ProxyBuilderHelper.GenerateStandardMethod(il, stub, mixinsField, index));
-                }
-
-                foreach (PropertyInfo propertyInfo in interfaceType.GetProperties())
-                {
-                    MethodBuilder getMethodBuilder = null;
-                    MethodInfo getMethodInfo = propertyInfo.GetGetMethod();
-                    if (getMethodInfo != null)
-                        getMethodBuilder = (MethodBuilder)GetTargetMethodInfo(mapping, getMethodInfo);
-
-                    MethodBuilder setMethodBuilder = null;
-                    MethodInfo setMethodInfo = propertyInfo.GetSetMethod();
-                    if (setMethodInfo != null)
-                        setMethodBuilder = (MethodBuilder)GetTargetMethodInfo(mapping, setMethodInfo);
-
-                    ProxyBuilderHelper.DefineProperty(typeBuilder, propertyInfo, getMethodBuilder, setMethodBuilder);
-                }
-
-                foreach (EventInfo eventInfo in interfaceType.GetEvents())
-                {
-                    var addMethodBuilder = (MethodBuilder)GetTargetMethodInfo(mapping, eventInfo.GetAddMethod());
-                    var removeMethodBuilder = (MethodBuilder)GetTargetMethodInfo(mapping, eventInfo.GetRemoveMethod());
-                    DefineEvent(typeBuilder, eventInfo, addMethodBuilder, removeMethodBuilder);
-                }
+                ProxyBuilderHelper.DefineInterface(typeBuilder, interfaceType, mixinType,
+                    (il, interfaceMethod, targetMethod) => GenerateMethod(il, interfaceMethod, targetMethod, mixinsField, index));
             }
         }
-        private static MethodInfo GetTargetMethodInfo(InterfaceMapping mapping, MethodInfo interfaceMethod)
+        private static void GenerateMethod(ILGenerator il, MethodInfo interfaceMethod, MethodInfo targetMethod, FieldBuilder mixinsField, int index)
         {
-            for (int i = 0; i < mapping.InterfaceMethods.Length; i++)
-                if (mapping.InterfaceMethods[i] == interfaceMethod)
-                    return mapping.TargetMethods[i];
+            MethodInfo stub = targetMethod.IsPrivate ? interfaceMethod : targetMethod;
 
-            throw new InvalidOperationException("mixin target method not found");
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldfld, mixinsField);
+            il.Emit(OpCodes.Ldc_I4, index);
+            il.Emit(OpCodes.Ldelem_Ref);
+
+            ParameterInfo[] stubParameterInfo = stub.GetParameters();
+            for (int i = 0; i < stubParameterInfo.Length; i++)
+                il.Emit(OpCodes.Ldarg, i + 1);
+
+            il.Emit(OpCodes.Call, stub);
+            il.Emit(OpCodes.Ret);
         }
     }
 }

@@ -132,6 +132,9 @@ namespace ProxyMixin.Mixins
         {
             return propertyDescriptor.GetValue(ProxyObject);
         }
+        protected virtual void OnProxyObjectChanged()
+        {
+        }
         protected virtual void SetValue(PropertyDescriptor propertyDescriptor, Object value)
         {
             propertyDescriptor.SetValue(ProxyObject, value);
@@ -154,6 +157,7 @@ namespace ProxyMixin.Mixins
             set
             {
                 _proxyObject = value;
+                OnProxyObjectChanged();
             }
         }
 

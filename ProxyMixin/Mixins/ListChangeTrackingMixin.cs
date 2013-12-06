@@ -31,6 +31,7 @@ namespace ProxyMixin.Mixins
 
         private ListChangeTrackingCollectionView _collectionView;
         private readonly Object _syncRoot;
+        private IList<K> _interfaceInvoker;
 
         public ListChangeTrackingMixin(ChangeTrackingFactory factory, String isChangedPropertyName = null)
             : this(factory, isChangedPropertyName, null)
@@ -77,6 +78,10 @@ namespace ProxyMixin.Mixins
         {
             WrappedList.Insert(index, GetWrappedItem(item));
             base.AddChangedStates(ChangedStates.Self);
+        }
+        protected override void OnProxyObjectChanged()
+        {
+            _interfaceInvoker = ProxyFactory.GetMethodInvoker<T, IList<K>>((T)base.ProxyObject);
         }
         public bool Remove(K item)
         {
@@ -129,7 +134,7 @@ namespace ProxyMixin.Mixins
         {
             get
             {
-                return (IList<K>)base.ProxyObject.WrappedObject;
+                return _interfaceInvoker;
             }
         }
 
