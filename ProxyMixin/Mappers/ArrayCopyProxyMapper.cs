@@ -4,26 +4,30 @@ using System.Reflection.Emit;
 
 namespace ProxyMixin.Mappers
 {
-    public class ArrayCopyProxyMapper<T> : ProxyMapper<T>
+    public class ArrayCopyProxyMapper<T, K> : ProxyMapper<T, K> where K : ArrayCopyProxyMapper<T, K>
     {
-        private static K[] CopyObjectArray<K>(K[] source, K[] target) where K : class
+        protected ArrayCopyProxyMapper()
+        {
+        }
+
+        private static I[] CopyObjectArray<I>(I[] source, I[] target) where I : class
         {
             if (source == null)
                 return null;
 
             if (target == null || source.Length != target.Length)
-                target = new K[source.Length];
+                target = new I[source.Length];
 
             Array.Copy(source, 0, target, 0, source.Length);
             return target;
         }
-        private static K[] CopyPrimitiveArray<K>(K[] source, K[] target) where K : struct
+        private static I[] CopyPrimitiveArray<I>(I[] source, I[] target) where I : struct
         {
             if (source == null)
                 return null;
 
             if (target == null || source.Length != target.Length)
-                target = new K[source.Length];
+                target = new I[source.Length];
 
             Buffer.BlockCopy(source, 0, target, 0, Buffer.ByteLength(source));
             return target;
@@ -52,6 +56,13 @@ namespace ProxyMixin.Mappers
             }
             else
                 base.Emit(il, fieldInfo);
+        }
+    }
+
+    public sealed class ArrayCopyProxyMapper<T> : ArrayCopyProxyMapper<T, ArrayCopyProxyMapper<T>>
+    {
+        private ArrayCopyProxyMapper()
+        {
         }
     }
 }

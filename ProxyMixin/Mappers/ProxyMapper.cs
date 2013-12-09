@@ -6,13 +6,23 @@ using System.Reflection.Emit;
 
 namespace ProxyMixin.Mappers
 {
-    public class ProxyMapper<T>
+    public class ProxyMapper<T, K> where K : ProxyMapper<T, K>
     {
         private Action<T, T> _mapperDelegate;
         private FieldBuilder _mixinsField;
         private TypeBuilder _typeBuilder;
         private FieldBuilder _wrappedObjectField;
+        public static K Instance = CreateInstance();
 
+        protected ProxyMapper()
+        {
+        }
+
+        private static K CreateInstance()
+        {
+            ConstructorInfo ctor = typeof(K).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null);
+            return (K)ctor.Invoke(null);
+        }
         private Action<T, T> CreateMemberwiseMap()
         {
             Type type = typeof(T);
@@ -115,6 +125,13 @@ namespace ProxyMixin.Mappers
             {
                 return _typeBuilder;
             }
+        }
+    }
+
+    public sealed class ProxyMapper<T> : ProxyMapper<T, ProxyMapper<T>>
+    {
+        private ProxyMapper()
+        {
         }
     }
 }

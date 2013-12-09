@@ -58,9 +58,8 @@ namespace ProxyMixin
             T proxy = CreateList<T>(wrappedObject, isChangedPropertyName, parent);
             if (proxy == null)
             {
-                var proxyMapper = new PropertyChangedProxyMapper<T>();
                 Object[] mixins = { new Mixins.ChangeTrackingMixin<T>(this, isChangedPropertyName, parent) };
-                proxy = base.CreateCore(wrappedObject, proxyMapper, mixins);
+                proxy = base.CreateCore(wrappedObject, PropertyChangedProxyMapper<T>.Instance, mixins);
             }
 
             _proxies[weakWrappedObject] = (IDynamicProxy)proxy;
@@ -76,9 +75,8 @@ namespace ProxyMixin
                 return default(T);
 
             Type mixinType = typeof(ListChangeTrackingMixin<,>).MakeGenericType(typeof(T), k);
-            var proxyMapper = new PropertyChangedProxyMapper<T>();
             Object[] mixins = { (IDynamicMixin)Activator.CreateInstance(mixinType, this, isChangedPropertyName, parent) };
-            return base.CreateCore(wrappedObject, proxyMapper, mixins);
+            return base.CreateCore(wrappedObject, PropertyChangedProxyMapper<T>.Instance, mixins);
         }
         public void Update(IChangeTrackingMixin parent, bool acceptChanges)
         {

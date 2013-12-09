@@ -13,7 +13,11 @@ namespace ProxyMixin.Mixins
         private readonly String _isChangedPropertyName;
         private PropertyChangedEventHandler _propertyChanged;
 
-        public PropertyChangedMixin(String isChangedPropertyName = null)
+        public PropertyChangedMixin()
+            : this(null)
+        {
+        }
+        public PropertyChangedMixin(String isChangedPropertyName)
             : base(GetMixinProperties(isChangedPropertyName))
         {
             if (!String.IsNullOrEmpty(isChangedPropertyName))

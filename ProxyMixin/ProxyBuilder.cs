@@ -39,8 +39,7 @@ namespace ProxyMixin
     {
         private T Create<T>(T wrappedObject, params Object[] mixins)
         {
-            var proxyMapper = new ProxyMapper<T>();
-            return CreateProxy<T>(CreateType<T>(proxyMapper, mixins), wrappedObject, mixins);
+            return CreateProxy<T>(CreateType<T, ProxyMapper<T>>(ProxyMapper<T>.Instance, mixins), wrappedObject, mixins);
         }
         internal static T CreateProxy<T>(Type proxyType, T wrappedObject, Object[] mixins)
         {
@@ -60,7 +59,7 @@ namespace ProxyMixin
             }
             return proxy;
         }
-        internal Type CreateType<T>(ProxyMapper<T> proxyMapper, params Object[] mixins)
+        internal Type CreateType<T, K>(ProxyMapper<T, K> proxyMapper, params Object[] mixins) where K : ProxyMapper<T, K>
         {
             TypeBuilder typeBuilder = ProxyFactory.GetTypeBuilder<T>();
             proxyMapper.DefineInterfaceDynamicProxy(typeBuilder);
