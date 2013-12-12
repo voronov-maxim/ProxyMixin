@@ -11,24 +11,6 @@ namespace ProxyMixin
 {
     public sealed class ChangeTrackingFactory : ProxyFactory
     {
-        private sealed class KeyWeakReference : WeakReference
-        {
-            public KeyWeakReference(Object target)
-                : base(target)
-            {
-            }
-
-            public override bool Equals(Object obj)
-            {
-                return ((WeakReference)obj).Target == base.Target;
-            }
-            public override int GetHashCode()
-            {
-                Object target = base.Target;
-                return target == null ? 0 : target.GetHashCode();
-            }
-        }
-
         private readonly Dictionary<Object, IDynamicProxy> _proxies;
 
         public ChangeTrackingFactory()
@@ -51,18 +33,17 @@ namespace ProxyMixin
                 return wrappedObject;
 
             IDynamicProxy dynamicProxy;
-            var weakWrappedObject = new KeyWeakReference(wrappedObject);
-            if (_proxies.TryGetValue(weakWrappedObject, out dynamicProxy))
+            if (_proxies.TryGetValue(wrappedObject, out dynamicProxy))
                 return (T)dynamicProxy;
 
             T proxy = CreateList<T>(wrappedObject, isChangedPropertyName, parent);
             if (proxy == null)
             {
                 Object[] mixins = { new Mixins.ChangeTrackingMixin<T>(this, isChangedPropertyName, parent) };
-                proxy = base.CreateCore(wrappedObject, PropertyChangedProxyMapper<T>.Instance, mixins);
+                proxy = base.CreateCore(wrappedObject, PropertyChangedProxyMapper<T>.Mapper, mixins);
             }
 
-            _proxies[weakWrappedObject] = (IDynamicProxy)proxy;
+            _proxies[wrappedObject] = (IDynamicProxy)proxy;
             return proxy;
         }
         private T CreateList<T>(T wrappedObject, String isChangedPropertyName = null, IChangeTrackingMixin parent = null)
@@ -76,7 +57,7 @@ namespace ProxyMixin
 
             Type mixinType = typeof(ListChangeTrackingMixin<,>).MakeGenericType(typeof(T), k);
             Object[] mixins = { (IDynamicMixin)Activator.CreateInstance(mixinType, this, isChangedPropertyName, parent) };
-            return base.CreateCore(wrappedObject, PropertyChangedProxyMapper<T>.Instance, mixins);
+            return base.CreateCore(wrappedObject, PropertyChangedProxyMapper<T>.Mapper, mixins);
         }
         public void Update(IChangeTrackingMixin parent, bool acceptChanges)
         {

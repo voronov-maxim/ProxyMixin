@@ -76,9 +76,9 @@ namespace ProxyMixin.Mixins
             if ((ChangedStates & ChangedStates.Self) != ChangedStates.None)
             {
                 if (acceptChanges)
-                    base.ProxyObject.MemberwiseMapToWrappedObject();
+                    base.ProxyObject.Mapper.Map(base.ProxyObject, base.ProxyObject.WrappedObject);
                 else
-                    base.ProxyObject.MemberwiseMapFromWrappedObject();
+                    base.ProxyObject.Mapper.Map(base.ProxyObject.WrappedObject, base.ProxyObject);
                 base.OnPropertyChanged(null);
             }
 

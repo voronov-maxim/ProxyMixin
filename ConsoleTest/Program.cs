@@ -1,7 +1,11 @@
 ﻿using ProxyMixin;
+using ProxyMixin.Mixins;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace ConsoleTest
 {
@@ -36,22 +40,42 @@ namespace ConsoleTest
         }
     }
 
-    public interface ITest
+    public interface ISimple
     {
-        int Test(string value, int v2);
+        void Test(string svalue, int ivalue);
+        //string STestProperty
+        //{
+        //    get;
+        //    set;
+        //}
     }
-    public class Test1 : ITest
+    public class BaseSimple : ISimple
     {
-        public int Test(string value, int v2)
+        void ISimple.Test(string svalue, int ivalue)
         {
-            return 22;
         }
+
+        //string ISimple.STestProperty
+        //{
+        //    get
+        //    {
+        //        return "baseSimple";
+        //    }
+        //    set
+        //    {
+        //    }
+        //}
     }
-    public class Test2 : Test1, ITest
+
+    public class Simple : BaseSimple, ISimple
     {
-        public int Test(string value, int v2)
+        public void Test(string svalue, int ivalue)
         {
-            return 11;
+        }
+        public string STestProperty
+        {
+            get;
+            set;
         }
     }
 
@@ -59,37 +83,50 @@ namespace ConsoleTest
     {
         static void Main(String[] args)
         {
-            var test = new Test2();
-            var invoker = ProxyFactory.GetMethodInvoker<List<int>, IList<int>>(new List<int>());
-            invoker.Add(1);
+            var simple = new Simple();
 
-            //var t2 = new Test2<Test1>();
-            //t2.InvokeBaseTest();
-            //((ITest)(t2)).Test();
+            var builder = new InterceptorMixin<ISimple>();
+            var mixin = builder.Create();
+            mixin.Test("string value1", 444);
+            //mixin.STestProperty = "ttt";
 
-            //var test = new Test();
-            //test.PropertyChanged += test_PropertyChanged;
-            //var factory1 = new ProxyMixin.ChangeTrackingFactory();
-            //var proxy1 = factory1.Create(test, "IsChanged");
-            //test.PropertyChanged += test_PropertyChanged2;
-            //((IDynamicProxy)proxy1).MemberwiseMapToWrappedObject();
-
-            //((INotifyPropertyChanged)proxy1).PropertyChanged += proxy1_PropertyChanged;
-            //proxy1.StringProperty1 = "test value";
-
-            //var factory2 = new ProxyMixin.ChangeTrackingFactory();
-            //var proxy2 = factory2.Create(test, "IsChanged");
+            //TestPerf();
         }
 
-        static void test_PropertyChanged(object sender, PropertyChangedEventArgs e)
+
+        /*private static void TestPerf()
         {
-        }
-        static void test_PropertyChanged2(object sender, PropertyChangedEventArgs e)
-        {
-        }
+            var simple = new BaseSimple();
 
-        static void proxy1_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-        }
+            var imap = typeof(BaseSimple).GetInterfaceMap(typeof(ISimple));
+            var minfo = imap.TargetMethods[0];
+            var isimple = (ISimple)simple;
+            var dlgt = (Action<BaseSimple, string, object>)ProxyBuilderHelper.CreateDelegateFromMethodInfo(minfo);
+
+            var sw = Stopwatch.StartNew();
+            for (int i = 0; i < 1000000; i++)
+            {
+                var args = new Object[] { "string value1", 444 };
+                minfo.Invoke(simple, args);
+            }
+            sw.Stop();
+            Console.WriteLine(sw.ElapsedMilliseconds);
+
+            sw = Stopwatch.StartNew();
+            for (int i = 0; i < 1000000; i++)
+                isimple.Test("string value1", 444);
+            sw.Stop();
+            Console.WriteLine(sw.ElapsedMilliseconds);
+
+            sw = Stopwatch.StartNew();
+            for (int i = 0; i < 1000000; i++)
+            {
+                var args = new Object[] { simple, "string value1", 444 };
+                //dlgt(simple, "string value1", 444);
+                dlgt.DynamicInvoke(args);
+            }
+            sw.Stop();
+            Console.WriteLine(sw.ElapsedMilliseconds);
+        }*/
     }
 }

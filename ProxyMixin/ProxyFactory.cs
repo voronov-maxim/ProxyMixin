@@ -1,4 +1,5 @@
-﻿using ProxyMixin.Mappers;
+﻿using ProxyMixin.Builders;
+using ProxyMixin.Mappers;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -63,16 +64,14 @@ namespace ProxyMixin
 
         private static int _counter;
         private static ModuleBuilder _moduleBuilder;
-        private readonly ProxyBuilder _proxyBuilder;
         private static readonly Dictionary<ProxyTypeDef, Type> _typeProxyCache = new Dictionary<ProxyTypeDef, Type>();
         private static readonly Dictionary<Type, Delegate> _interfaceInvokerCache = new Dictionary<Type, Delegate>();
 
         public ProxyFactory()
         {
-            _proxyBuilder = new ProxyBuilder();
         }
 
-        protected T CreateCore<T, K>(T wrappedObject, ProxyMapper<T, K> proxyMapper, Object[] mixins) where K : ProxyMapper<T, K>
+        protected T CreateCore<T>(T wrappedObject, IProxyMapper proxyMapper, Object[] mixins)
         {
             var interfaceTypes = new HashSet<Type>();
             foreach (Object mixin in mixins)
@@ -87,21 +86,21 @@ namespace ProxyMixin
             Type proxyType = null;
             if (!_typeProxyCache.TryGetValue(proxyTypeDef, out proxyType))
             {
-                proxyType = _proxyBuilder.CreateType<T, K>(proxyMapper, mixins);
+                proxyType = ProxyBuilder.CreateType<T>(mixins);
                 _typeProxyCache.Add(proxyTypeDef, proxyType);
             }
 
-            return ProxyBuilder.CreateProxy<T>(proxyType, wrappedObject, mixins);
+            return ProxyBuilder.CreateProxy<T>(proxyType, wrappedObject, proxyMapper, mixins);
         }
-        public static T CreateDynamic<T>(T wrappedObject)
+        public static T CreateExpando<T>(T wrappedObject)
         {
-            Object[] mixins = { new Mixins.DynamicMixin<T>() };
-            return new ProxyFactory().CreateCore(wrappedObject, ProxyMapper<T>.Instance, mixins);
+            Object[] mixins = { new Mixins.ExpandoMixin<T>() };
+            return new ProxyFactory().CreateCore(wrappedObject, ProxyMapper<T>.Mapper, mixins);
         }
         public static T CreatePropertyChanged<T>(T wrappedObject, String isChangedPropertyName = null)
         {
             Object[] mixins = { new Mixins.PropertyChangedMixin<T>(isChangedPropertyName) };
-            return new ProxyFactory().CreateCore(wrappedObject, ProxyMapper<T>.Instance, mixins);
+            return new ProxyFactory().CreateCore(wrappedObject, ProxyMapper<T>.Mapper, mixins);
         }
         public static I GetMethodInvoker<T, I>(T interfaceObject)
             where T : I
@@ -124,7 +123,7 @@ namespace ProxyMixin
 
             return ctor(interfaceObject);
         }
-        private static ModuleBuilder GetModuleBuilder()
+        internal static ModuleBuilder GetModuleBuilder()
         {
             if (_moduleBuilder == null)
             {

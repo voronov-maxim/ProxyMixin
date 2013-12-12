@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace ProxyMixin
+namespace ProxyMixin.Builders
 {
     public sealed class InterfaceInvokerBuilder<T, I>
         where T : I
@@ -43,28 +42,6 @@ namespace ProxyMixin
             MethodInfo createMethodInfo = interfaceInvokerType.GetMethod("<Create>");
             return (Func<I, I>)Delegate.CreateDelegate(typeof(Func<I, I>), createMethodInfo);
         }
-        private static Delegate CreatePrivateMethodDelegate(MethodInfo methodInfo)
-        {
-            bool isAction = methodInfo.ReturnType == typeof(void);
-            ParameterInfo[] parameterInfos = methodInfo.GetParameters();
-            var parameterTypes = new Type[parameterInfos.Length + (isAction ? 1 : 2)];
-            parameterTypes[0] = methodInfo.DeclaringType;
-            for (int i = 0; i < parameterInfos.Length; i++)
-                parameterTypes[i + 1] = parameterInfos[i].ParameterType;
-
-            Type delegateType;
-            if (isAction)
-                delegateType = Expression.GetActionType(parameterTypes);
-            else
-            {
-                parameterTypes[parameterTypes.Length - 1] = methodInfo.ReturnType;
-                delegateType = Expression.GetFuncType(parameterTypes);
-            }
-
-            IntPtr functPtr = methodInfo.MethodHandle.GetFunctionPointer();
-            ConstructorInfo ctor = delegateType.GetConstructors()[0];
-            return (Delegate)ctor.Invoke(new Object[] { null, functPtr });
-        }
         private static void DefineCtor(TypeBuilder typeBuilder, FieldBuilder fieldBuilder)
         {
             ConstructorBuilder ctorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new Type[] { typeof(I) });
@@ -86,8 +63,8 @@ namespace ProxyMixin
             MethodInfo stub;
             if (targetMethod.IsPrivate)
             {
-                Delegate methodDelegate = CreatePrivateMethodDelegate(targetMethod);
-                String name = interfaceMethod.DeclaringType.Name + "." + interfaceMethod.Name;
+                Delegate methodDelegate = ProxyBuilderHelper.CreateDelegateFromMethodInfo(targetMethod);
+                String name = interfaceMethod.DeclaringType.FullName + "." + interfaceMethod.Name;
                 FieldBuilder methodField = _typeBuilder.DefineField(name, methodDelegate.GetType(), FieldAttributes.Static | FieldAttributes.Private);
                 _privateMethods.Add(new KeyValuePair<FieldBuilder, Delegate>(methodField, methodDelegate));
 

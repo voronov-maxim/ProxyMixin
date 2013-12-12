@@ -41,14 +41,7 @@ namespace WpfTest
             };
 
             var factory = new ProxyMixin.ChangeTrackingFactory();
-            try
-            {
-                base.DataContext = factory.Create(viewModel1, "IsChanged");
-            }
-            catch (Exception e)
-            {
-
-            }
+            base.DataContext = factory.Create(viewModel1, "IsChanged");
         }
 
         void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)

@@ -1,13 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace ProxyMixin
+namespace ProxyMixin.Builders
 {
     internal static class ProxyBuilderHelper
     {
+        public static Delegate CreateDelegateFromMethodInfo(MethodInfo methodInfo)
+        {
+            bool isAction = methodInfo.ReturnType == typeof(void);
+            ParameterInfo[] parameterInfos = methodInfo.GetParameters();
+            var parameterTypes = new Type[parameterInfos.Length + (isAction ? 1 : 2)];
+            parameterTypes[0] = methodInfo.DeclaringType;
+            for (int i = 0; i < parameterInfos.Length; i++)
+                parameterTypes[i + 1] = parameterInfos[i].ParameterType;
+
+            Type delegateType;
+            if (isAction)
+                delegateType = Expression.GetActionType(parameterTypes);
+            else
+            {
+                parameterTypes[parameterTypes.Length - 1] = methodInfo.ReturnType;
+                delegateType = Expression.GetFuncType(parameterTypes);
+            }
+
+            IntPtr functPtr = methodInfo.MethodHandle.GetFunctionPointer();
+            ConstructorInfo ctor = delegateType.GetConstructors()[0];
+            return (Delegate)ctor.Invoke(new Object[] { null, functPtr });
+        }
         public static void DefineEvent(TypeBuilder typeBuilder, EventInfo eventInfo,
             MethodBuilder addMethodBuilder, MethodBuilder removeMethodBuilder)
         {
@@ -46,7 +69,6 @@ namespace ProxyMixin
                 var removeMethodBuilder = (MethodBuilder)GetTargetMethodInfo(mapping, eventInfo.GetRemoveMethod());
                 ProxyBuilderHelper.DefineEvent(typeBuilder, eventInfo, addMethodBuilder, removeMethodBuilder);
             }
-
         }
         public static MethodBuilder DefineMethod(TypeBuilder typeBuilder, MethodInfo methodInfo, Action<ILGenerator> ilGenerator)
         {
