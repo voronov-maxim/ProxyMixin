@@ -71,6 +71,10 @@ namespace ProxyMixin
         {
         }
 
+        public static T Create<T>(T wrappedObject, params Object[] mixins)
+        {
+            return new ProxyFactory().CreateCore(wrappedObject, ProxyMapper<T>.Mapper, mixins);
+        }
         protected T CreateCore<T>(T wrappedObject, IProxyMapper proxyMapper, Object[] mixins)
         {
             var interfaceTypes = new HashSet<Type>();

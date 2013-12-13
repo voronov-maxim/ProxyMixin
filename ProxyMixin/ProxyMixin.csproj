@@ -43,6 +43,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Builders\MethodInfoMapping.cs" />
     <Compile Include="ChangeTrackingFactory.cs" />
     <Compile Include="Builders\InterfaceBuilder.cs" />
     <Compile Include="Builders\InterfaceInvokerBuilder.cs" />

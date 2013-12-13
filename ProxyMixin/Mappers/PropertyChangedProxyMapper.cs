@@ -6,8 +6,10 @@ using System.Reflection.Emit;
 
 namespace ProxyMixin.Mappers
 {
-    public class PropertyChangedProxyMapper<T, K> : ArrayCopyProxyMapper<T, K> where K : PropertyChangedProxyMapper<T, K>
+    public class PropertyChangedProxyMapper<T> : ArrayCopyProxyMapper<T>
     {
+        public new static IProxyMapper Mapper = CreateProxyMapper(new PropertyChangedProxyMapper<T>());
+
         protected PropertyChangedProxyMapper()
         {
         }
@@ -42,13 +44,6 @@ namespace ProxyMixin.Mappers
             }
             else
                 base.Emit(il, fieldInfo);
-        }
-    }
-
-    public sealed class PropertyChangedProxyMapper<T> : PropertyChangedProxyMapper<T, PropertyChangedProxyMapper<T>>
-    {
-        private PropertyChangedProxyMapper()
-        {
         }
     }
 }

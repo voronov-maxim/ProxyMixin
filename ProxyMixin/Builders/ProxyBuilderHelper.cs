@@ -53,20 +53,20 @@ namespace ProxyMixin.Builders
                 MethodBuilder getMethodBuilder = null;
                 MethodInfo getMethodInfo = propertyInfo.GetGetMethod();
                 if (getMethodInfo != null)
-                    getMethodBuilder = (MethodBuilder)GetTargetMethodInfo(mapping, getMethodInfo);
+                    getMethodBuilder = (MethodBuilder)GetTargetMethodInfo(ref mapping, getMethodInfo);
 
                 MethodBuilder setMethodBuilder = null;
                 MethodInfo setMethodInfo = propertyInfo.GetSetMethod();
                 if (setMethodInfo != null)
-                    setMethodBuilder = (MethodBuilder)GetTargetMethodInfo(mapping, setMethodInfo);
+                    setMethodBuilder = (MethodBuilder)GetTargetMethodInfo(ref mapping, setMethodInfo);
 
                 ProxyBuilderHelper.DefineProperty(typeBuilder, propertyInfo, getMethodBuilder, setMethodBuilder);
             }
 
             foreach (EventInfo eventInfo in interfaceType.GetEvents())
             {
-                var addMethodBuilder = (MethodBuilder)GetTargetMethodInfo(mapping, eventInfo.GetAddMethod());
-                var removeMethodBuilder = (MethodBuilder)GetTargetMethodInfo(mapping, eventInfo.GetRemoveMethod());
+                var addMethodBuilder = (MethodBuilder)GetTargetMethodInfo(ref mapping, eventInfo.GetAddMethod());
+                var removeMethodBuilder = (MethodBuilder)GetTargetMethodInfo(ref mapping, eventInfo.GetRemoveMethod());
                 ProxyBuilderHelper.DefineEvent(typeBuilder, eventInfo, addMethodBuilder, removeMethodBuilder);
             }
         }
@@ -92,13 +92,20 @@ namespace ProxyMixin.Builders
             if (setMethodBuilder != null)
                 propertyBuilder.SetSetMethod(setMethodBuilder);
         }
-        public static void GenerateFieldMethod(ILGenerator il, FieldBuilder fieldBuilder)
+        public static void GenerateGetFieldMethod(ILGenerator il, FieldBuilder fieldBuilder)
         {
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Ldfld, fieldBuilder);
             il.Emit(OpCodes.Ret);
         }
-        private static MethodInfo GetTargetMethodInfo(InterfaceMapping mapping, MethodInfo interfaceMethod)
+        public static void GenerateSetFieldMethod(ILGenerator il, FieldBuilder fieldBuilder)
+        {
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldarg_1);
+            il.Emit(OpCodes.Stfld, fieldBuilder);
+            il.Emit(OpCodes.Ret);
+        }
+        public static MethodInfo GetTargetMethodInfo(ref InterfaceMapping mapping, MethodInfo interfaceMethod)
         {
             for (int i = 0; i < mapping.InterfaceMethods.Length; i++)
                 if (mapping.InterfaceMethods[i] == interfaceMethod)

@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 
 namespace ProxyMixin.Mappers
 {
-    public class ProxyMapper<T, K> where K : ProxyMapper<T, K>
+    public class ProxyMapper<T>
     {
         private sealed class ProxyMapperImpl : IProxyMapper
         {
@@ -24,23 +24,20 @@ namespace ProxyMixin.Mappers
             }
         }
 
-        public static IProxyMapper Mapper = CreateProxyMapper();
+        public static IProxyMapper Mapper = CreateProxyMapper(new ProxyMapper<T>());
 
         protected ProxyMapper()
         {
         }
 
-        private static IProxyMapper CreateProxyMapper()
+        protected static IProxyMapper CreateProxyMapper(ProxyMapper<T> proxyMapper)
         {
-            ConstructorInfo ctor = typeof(K).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null);
-            var mapperBuilder = (K)ctor.Invoke(null);
-            Action<T, T> mapperAction = mapperBuilder.CreateMapperAction();
-            return new ProxyMapperImpl(mapperAction);
+            return new ProxyMapperImpl(proxyMapper.CreateMapperAction());
         }
         private Action<T, T> CreateMapperAction()
         {
             Type type = typeof(T);
-            String name = typeof(K).Name + "[" + typeof(T).Name + "]";
+            String name = base.GetType().Name + "[" + typeof(T).Name + "]";
             var dynamicMethod = new DynamicMethod(name, null, new Type[] { type, type }, ProxyFactory.GetModuleBuilder(), true);
             ILGenerator il = dynamicMethod.GetILGenerator();
 
@@ -61,13 +58,6 @@ namespace ProxyMixin.Mappers
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Ldfld, fieldInfo);
             il.Emit(OpCodes.Stfld, fieldInfo);
-        }
-    }
-
-    public sealed class ProxyMapper<T> : ProxyMapper<T, ProxyMapper<T>>
-    {
-        private ProxyMapper()
-        {
         }
     }
 }

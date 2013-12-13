@@ -4,8 +4,10 @@ using System.Reflection.Emit;
 
 namespace ProxyMixin.Mappers
 {
-    public class ArrayCopyProxyMapper<T, K> : ProxyMapper<T, K> where K : ArrayCopyProxyMapper<T, K>
+    public class ArrayCopyProxyMapper<T> : ProxyMapper<T>
     {
+        public new static IProxyMapper Mapper = CreateProxyMapper(new ArrayCopyProxyMapper<T>());
+
         protected ArrayCopyProxyMapper()
         {
         }
@@ -56,13 +58,6 @@ namespace ProxyMixin.Mappers
             }
             else
                 base.Emit(il, fieldInfo);
-        }
-    }
-
-    public sealed class ArrayCopyProxyMapper<T> : ArrayCopyProxyMapper<T, ArrayCopyProxyMapper<T>>
-    {
-        private ArrayCopyProxyMapper()
-        {
         }
     }
 }

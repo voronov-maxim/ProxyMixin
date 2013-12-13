@@ -42,40 +42,85 @@ namespace ConsoleTest
 
     public interface ISimple
     {
-        void Test(string svalue, int ivalue);
-        //string STestProperty
-        //{
-        //    get;
-        //    set;
-        //}
+        int TestString(string svalue, int ivalue);
+        void TestVoid();
+        string STestProperty
+        {
+            get;
+            set;
+        }
+        Simple this[int i]
+        {
+            get;
+            set;
+        }
     }
     public class BaseSimple : ISimple
     {
-        void ISimple.Test(string svalue, int ivalue)
+        int ISimple.TestString(string svalue, int ivalue)
+        {
+            //return "base " + svalue + " = " + ivalue;
+            return ivalue * 10;
+        }
+        void ISimple.TestVoid()
         {
         }
 
-        //string ISimple.STestProperty
-        //{
-        //    get
-        //    {
-        //        return "baseSimple";
-        //    }
-        //    set
-        //    {
-        //    }
-        //}
+        string ISimple.STestProperty
+        {
+            get
+            {
+                return "baseSimple";
+            }
+            set
+            {
+            }
+        }
+
+        Simple ISimple.this[int i]
+        {
+            get
+            {
+                return new Simple();
+            }
+            set
+            {
+            }
+        }
     }
 
     public class Simple : BaseSimple, ISimple
     {
-        public void Test(string svalue, int ivalue)
+        int ISimple.TestString(string svalue, int ivalue)
+        {
+            //return svalue + " = " + ivalue;
+            return ivalue * 20;
+        }
+        void ISimple.TestVoid()
         {
         }
+
+        private string _STestProperty;
         public string STestProperty
         {
-            get;
-            set;
+            get
+            {
+                return _STestProperty;
+            }
+            set
+            {
+                _STestProperty = value;
+            }
+        }
+        Simple ISimple.this[int i]
+        {
+            get
+            {
+                return new Simple();
+            }
+            set
+            {
+            }
         }
     }
 
@@ -83,50 +128,50 @@ namespace ConsoleTest
     {
         static void Main(String[] args)
         {
-            var simple = new Simple();
+            LoggerSample.RunTest();
 
-            var builder = new InterceptorMixin<ISimple>();
-            var mixin = builder.Create();
-            mixin.Test("string value1", 444);
-            //mixin.STestProperty = "ttt";
+            //var simple = new Simple();
 
+            //var builder = new InterceptorMixin<ISimple>();
+            //var interceptorMixin = builder.Create();
+            //var proxy = ProxyFactory.Create(simple, interceptorMixin);
+            //var isimple = (ISimple)proxy;
+            //var result = isimple.TestString("test value", 33);
+            //isimple.TestVoid();
+            //isimple.STestProperty = "qqq";
+            //var sprop = isimple.STestProperty;
+            //isimple[0] = new Simple();
+            //var ind = isimple[0];
+            
             //TestPerf();
         }
 
 
-        /*private static void TestPerf()
+        private static void TestPerf()
         {
-            var simple = new BaseSimple();
-
-            var imap = typeof(BaseSimple).GetInterfaceMap(typeof(ISimple));
-            var minfo = imap.TargetMethods[0];
+            var simple = new Simple();
             var isimple = (ISimple)simple;
-            var dlgt = (Action<BaseSimple, string, object>)ProxyBuilderHelper.CreateDelegateFromMethodInfo(minfo);
+
+            var builder = new InterceptorMixin<ISimple>();
+            var interceptorMixin = builder.Create();
+            var proxy = ProxyFactory.Create(simple, interceptorMixin);
+            var iproxy = (ISimple)proxy;
 
             var sw = Stopwatch.StartNew();
             for (int i = 0; i < 1000000; i++)
             {
-                var args = new Object[] { "string value1", 444 };
-                minfo.Invoke(simple, args);
+                //iproxy.TestString("string value1", 444);
             }
-            sw.Stop();
-            Console.WriteLine(sw.ElapsedMilliseconds);
-
-            sw = Stopwatch.StartNew();
-            for (int i = 0; i < 1000000; i++)
-                isimple.Test("string value1", 444);
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds);
 
             sw = Stopwatch.StartNew();
             for (int i = 0; i < 1000000; i++)
             {
-                var args = new Object[] { simple, "string value1", 444 };
-                //dlgt(simple, "string value1", 444);
-                dlgt.DynamicInvoke(args);
+                //isimple.TestString("string value1", 444);
             }
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds);
-        }*/
+        }
     }
 }

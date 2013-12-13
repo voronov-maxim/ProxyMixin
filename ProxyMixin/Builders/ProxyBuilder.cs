@@ -9,42 +9,45 @@ namespace ProxyMixin.Builders
 {
     public sealed class ProxyBuilder
     {
-        private FieldBuilder _mapperField;
-        private FieldBuilder _mixinsField;
+        private sealed class DynamicProxyInterfaceBuilder : InterfaceBuilder<IDynamicProxy>
+        {
+            public DynamicProxyInterfaceBuilder(TypeBuilder typeBuilder)
+                : base(typeBuilder)
+            {
+            }
+
+            protected override void GenerateGetProperty(ILGenerator il, MethodInfoMapping mapping)
+            {
+                base.DefineField(mapping);
+                ProxyBuilderHelper.GenerateGetFieldMethod(il, mapping.FieldBuilder);
+            }
+            protected override void GenerateSetProperty(ILGenerator il, MethodInfoMapping mapping)
+            {
+                base.DefineField(mapping);
+                ProxyBuilderHelper.GenerateSetFieldMethod(il, mapping.FieldBuilder);
+            }
+        }
+
         private readonly TypeBuilder _typeBuilder;
-        private FieldBuilder _wrappedObjectField;
 
         private ProxyBuilder(TypeBuilder typeBuilder)
         {
             _typeBuilder = typeBuilder;
         }
 
-        private void CreateMapper()
-        {
-            PropertyInfo propertyInfo = typeof(IDynamicProxy).GetProperty("Mapper");
-            MethodBuilder getMethodBuilder = ProxyBuilderHelper.DefineMethod(_typeBuilder, propertyInfo.GetGetMethod(),
-                il => ProxyBuilderHelper.GenerateFieldMethod(il, _mapperField));
-            ProxyBuilderHelper.DefineProperty(_typeBuilder, propertyInfo, getMethodBuilder, null);
-        }
-        private void CreateMixins()
-        {
-            PropertyInfo propertyInfo = typeof(IDynamicProxy).GetProperty("Mixins");
-            MethodBuilder getMethodBuilder = ProxyBuilderHelper.DefineMethod(_typeBuilder, propertyInfo.GetGetMethod(),
-                il => ProxyBuilderHelper.GenerateFieldMethod(il, _mixinsField));
-            ProxyBuilderHelper.DefineProperty(_typeBuilder, propertyInfo, getMethodBuilder, null);
-        }
         internal static T CreateProxy<T>(Type proxyType, T wrappedObject, IProxyMapper proxyMapper, Object[] mixins)
         {
             var proxy = (T)FormatterServices.GetUninitializedObject(proxyType);
+            String fieldName = typeof(IDynamicProxy).FullName + ".";
 
-            FieldInfo fieldInfo = proxyType.GetField("mixins", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo fieldInfo = proxyType.GetField(fieldName + "Mapper", BindingFlags.Instance | BindingFlags.NonPublic);
+            fieldInfo.SetValue(proxy, proxyMapper);
+
+            fieldInfo = proxyType.GetField(fieldName + "Mixins", BindingFlags.Instance | BindingFlags.NonPublic);
             fieldInfo.SetValue(proxy, mixins);
 
-            fieldInfo = proxyType.GetField("wrappedObject", BindingFlags.Instance | BindingFlags.NonPublic);
+            fieldInfo = proxyType.GetField(fieldName + "WrappedObject", BindingFlags.Instance | BindingFlags.NonPublic);
             fieldInfo.SetValue(proxy, wrappedObject);
-
-            fieldInfo = proxyType.GetField("mapper", BindingFlags.Instance | BindingFlags.NonPublic);
-            fieldInfo.SetValue(proxy, proxyMapper);
 
             proxyMapper.Map(wrappedObject, proxy);
             foreach (Object mixin in mixins)
@@ -61,29 +64,13 @@ namespace ProxyMixin.Builders
         }
         private Type CreateTypeInternal<T>(params Object[] mixins)
         {
-            DefineInterfaceDynamicProxy();
+            var interfaceBuilder = new DynamicProxyInterfaceBuilder(_typeBuilder);
+            MethodInfoMappingCollection mappings = interfaceBuilder.DefineInterface();
+
+            FieldBuilder mixinsField = mappings["Mixins"].FieldBuilder;
             for (int i = 0; i < mixins.Length; i++)
-                DefineMixin(_typeBuilder, mixins[i], _mixinsField, i);
+                DefineMixin(_typeBuilder, mixins[i], mixinsField, i);
             return _typeBuilder.CreateType();
-        }
-        private void CreateWrappedObject()
-        {
-            PropertyInfo propertyInfo = typeof(IDynamicProxy).GetProperty("WrappedObject");
-            MethodBuilder getMethodBuilder = ProxyBuilderHelper.DefineMethod(_typeBuilder, propertyInfo.GetGetMethod(),
-                il => ProxyBuilderHelper.GenerateFieldMethod(il, _wrappedObjectField));
-            ProxyBuilderHelper.DefineProperty(_typeBuilder, propertyInfo, getMethodBuilder, null);
-        }
-        private void DefineInterfaceDynamicProxy()
-        {
-            _typeBuilder.AddInterfaceImplementation(typeof(IDynamicProxy));
-
-            _mapperField = _typeBuilder.DefineField("mapper", typeof(IProxyMapper), FieldAttributes.Private);
-            _mixinsField = _typeBuilder.DefineField("mixins", typeof(Object[]), FieldAttributes.Private);
-            _wrappedObjectField = _typeBuilder.DefineField("wrappedObject", typeof(Object), FieldAttributes.Private);
-
-            CreateMapper();
-            CreateMixins();
-            CreateWrappedObject();
         }
         private static void DefineMixin(TypeBuilder typeBuilder, Object mixin, FieldBuilder mixinsField, int index)
         {
