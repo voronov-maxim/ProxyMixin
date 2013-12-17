@@ -1,4 +1,5 @@
 ﻿using ProxyMixin;
+using ProxyMixin.Factories;
 using ProxyMixin.Mixins;
 using System;
 using System.Collections.Generic;
@@ -11,44 +12,116 @@ namespace ConsoleTest
 {
     public class ListLoggerMixin<T> : InterceptorMixin<IList<T>>
     {
+        protected override Object GetIndexProperty(PropertyInfo propertyInfo, Object[] args)
+        {
+            Object result = base.GetIndexProperty(propertyInfo, args);
+            LogHelper.GetIndexProperty(propertyInfo, args, result);
+            return result;
+        }
+        protected override Object GetProperty(PropertyInfo propertyInfo)
+        {
+            Object result = base.GetProperty(propertyInfo);
+            LogHelper.GetProperty(propertyInfo, result);
+            return result;
+        }
         protected override Object Invoke(MethodInfo methodInfo, Object[] args)
         {
             Object result = base.Invoke(methodInfo, args);
-            Log(methodInfo, args);
+            LogHelper.Invoke(methodInfo, args, result);
             return result;
         }
-        private static void Log(MethodInfo methodInfo, Object[] args)
+        protected override void SetIndexProperty(PropertyInfo propertyInfo, Object[] args)
         {
-            var sb = new StringBuilder(methodInfo.Name);
-            sb.Append('(');
-            for (int i = 0; i < args.Length; i++)
-            {
-                Object arg = args[i];
-                sb.Append(arg == null ? "null" : arg.ToString());
-                if (i < args.Length - 1)
-                    sb.Append(", ");
-            }
-            sb.Append(");");
-            Trace.WriteLine(sb.ToString());
+            base.SetIndexProperty(propertyInfo, args);
+            LogHelper.SetIndexProperty(propertyInfo, args);
+        }
+        protected override void SetProperty(PropertyInfo propertyInfo, Object value)
+        {
+            base.SetProperty(propertyInfo, value);
+            LogHelper.SetProperty(propertyInfo, value);
         }
     }
 
-    public class LoggerSample
+    public static class LogHelper
     {
-        public static void RunTest()
+        private static void Args(StringBuilder sb, Object[] args)
         {
-            var list = new List<int>();
+            for (int i = 0; i < args.Length; i++)
+            {
+                Object arg = args[i];
+                sb.Append(ToString(arg));
+                if (i < args.Length - 1)
+                    sb.Append(", ");
+            }
+        }
+        public static void GetIndexProperty(PropertyInfo propertyInfo, Object[] args, Object result)
+        {
+            var sb = new StringBuilder(propertyInfo.Name);
+            sb.Append('[');
+            Args(sb, args);
+            sb.Append("]: ");
+            sb.Append(ToString(result));
+            sb.Append(';');
 
-            var logger = new ListLoggerMixin<int>();
-            IList<int> proxy = ProxyFactory.Create(list, logger.Create());
+            Trace.WriteLine(sb.ToString());
+        }
+        public static void GetProperty(PropertyInfo propertyInfo, Object result)
+        {
+            var sb = new StringBuilder(propertyInfo.Name);
+            sb.Append(": ");
+            sb.Append(ToString(result));
+            sb.Append(';');
 
-            Trace.Listeners.Add(new TextWriterTraceListener(@"C:\work\trace.log"));
-            for (int i = 0; i < 10; i++)
-                proxy.Add(i);
-            var cnt = proxy.Count;
-            while (proxy.Count > 0)
-                proxy.RemoveAt(0);
-            Trace.Flush();
+            Trace.WriteLine(sb.ToString());
+        }
+        public static void Invoke(MethodInfo methodInfo, Object[] args, Object result)
+        {
+            var sb = new StringBuilder(methodInfo.Name);
+            sb.Append('(');
+            Args(sb, args);
+
+            if (methodInfo.ReturnType == typeof(void))
+                sb.Append(')');
+            else
+            {
+                sb.Append("): ");
+                sb.Append(ToString(result));
+            }
+            sb.Append(';');
+
+            Trace.WriteLine(sb.ToString());
+        }
+        public static void SetIndexProperty(PropertyInfo propertyInfo, Object[] args)
+        {
+            var sb = new StringBuilder(propertyInfo.Name);
+            sb.Append('[');
+
+            for (int i = 0; i < args.Length - 1; i++)
+            {
+                Object arg = args[i];
+                sb.Append(ToString(arg));
+                if (i < args.Length - 2)
+                    sb.Append(", ");
+            }
+
+            sb.Append("] = ");
+            sb.Append(ToString(args[args.Length - 1]));
+            sb.Append(';');
+
+            Trace.WriteLine(sb.ToString());
+        }
+        public static void SetProperty(PropertyInfo propertyInfo, Object value)
+        {
+            var sb = new StringBuilder(propertyInfo.Name);
+            sb.Append(" = ");
+            sb.Append(ToString(value));
+            sb.Append(';');
+
+            Trace.WriteLine(sb.ToString());
+        }
+        private static String ToString(Object value)
+        {
+            return value == null ? "null" : value.ToString();
         }
     }
 }

@@ -31,6 +31,11 @@ namespace ProxyMixin
         }
     }
 
+    public interface IMixinSource
+    {
+        IDynamicMixin GetMixin();
+    }
+
     public interface IProxyMapper
     {
         void Map(Object source, Object target);

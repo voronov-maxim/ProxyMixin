@@ -77,8 +77,16 @@ namespace ProxyMixin
         }
         protected T CreateCore<T>(T wrappedObject, IProxyMapper proxyMapper, Object[] mixins)
         {
+            Object[] mixins2 = mixins;
+            for (int i = 0; i < mixins2.Length; i++)
+            {
+                var mixinSource = mixins2[i] as IMixinSource;
+                if (mixinSource != null)
+                    mixins2[i] = mixinSource.GetMixin();
+            }
+
             var interfaceTypes = new HashSet<Type>();
-            foreach (Object mixin in mixins)
+            foreach (Object mixin in mixins2)
             {
                 interfaceTypes.UnionWith(mixin.GetType().GetInterfaces());
                 var dynamicMixin = mixin as IDynamicMixin;
@@ -90,11 +98,11 @@ namespace ProxyMixin
             Type proxyType = null;
             if (!_typeProxyCache.TryGetValue(proxyTypeDef, out proxyType))
             {
-                proxyType = ProxyBuilder.CreateType<T>(mixins);
+                proxyType = ProxyBuilder.CreateType<T>(mixins2);
                 _typeProxyCache.Add(proxyTypeDef, proxyType);
             }
 
-            return ProxyBuilder.CreateProxy<T>(proxyType, wrappedObject, proxyMapper, mixins);
+            return ProxyBuilder.CreateProxy<T>(proxyType, wrappedObject, proxyMapper, mixins2);
         }
         public static T CreateExpando<T>(T wrappedObject)
         {

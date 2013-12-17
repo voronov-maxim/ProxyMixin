@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 
 namespace ProxyMixin.Mixins
 {
-    public class InterceptorMixin<I> : IDynamicMixin where I : class
+    public class InterceptorMixin<I> : IDynamicMixin, IMixinSource where I : class
     {
         private struct InterfaceMethodMapping
         {
@@ -128,9 +128,15 @@ namespace ProxyMixin.Mixins
         }
 
         private InterfaceMethodMapping[] _interfaceMethodMapping;
+        private readonly Type[] _noImplementInterfaces;
         private IDynamicProxy _proxyObject;
 
-        public IDynamicMixin Create()
+        public InterceptorMixin()
+        {
+            _noImplementInterfaces = new Type[] { typeof(IMixinSource) };
+        }
+
+        private IDynamicMixin Create()
         {
             ModuleBuilder moduleBuilder = ProxyFactory.GetModuleBuilder();
             String name = "Interceptor." + typeof(I).FullName;
@@ -203,7 +209,7 @@ namespace ProxyMixin.Mixins
         {
             get
             {
-                return Type.EmptyTypes;
+                return _noImplementInterfaces;
             }
         }
 
@@ -218,6 +224,11 @@ namespace ProxyMixin.Mixins
                 _interfaceMethodMapping = GetInterfaceMethodMapping(value);
                 _proxyObject = value;
             }
+        }
+
+        IDynamicMixin IMixinSource.GetMixin()
+        {
+            return Create();
         }
     }
 }

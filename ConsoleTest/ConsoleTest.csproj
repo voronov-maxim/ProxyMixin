@@ -45,6 +45,7 @@
     <Compile Include="LoggerSample.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RunSamples.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

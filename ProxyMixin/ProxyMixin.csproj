@@ -44,9 +44,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Builders\MethodInfoMapping.cs" />
-    <Compile Include="ChangeTrackingFactory.cs" />
+    <Compile Include="Factories\ChangeTrackingFactory.cs" />
     <Compile Include="Builders\InterfaceBuilder.cs" />
     <Compile Include="Builders\InterfaceInvokerBuilder.cs" />
+    <Compile Include="Factories\InterceptorFactory.cs" />
     <Compile Include="interfaces.cs" />
     <Compile Include="Mappers\ArrayCopyProxyMapper.cs" />
     <Compile Include="Mappers\PropertyChangedProxyMapper.cs" />

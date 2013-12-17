@@ -7,7 +7,7 @@ using System.Windows.Forms;
 using ProxyMixin.Mixins;
 using ProxyMixin.Mappers;
 
-namespace ProxyMixin
+namespace ProxyMixin.Factories
 {
     public sealed class ChangeTrackingFactory : ProxyFactory
     {
