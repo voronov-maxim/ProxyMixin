@@ -27,7 +27,7 @@ namespace ConsoleTest
         {
             var list = new List<int>();
             var factory = new InterceptorFactory();
-            var proxy = factory.Create(list, new ListLoggerMixin<int>());
+            var proxy = factory.Create(list, new ListLoggerMixin<IList<int>>());
 
             for (int i = 0; i < 10; i++)
                 proxy.Add(i);

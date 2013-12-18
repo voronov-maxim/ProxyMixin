@@ -10,7 +10,7 @@ using System.Text;
 
 namespace ConsoleTest
 {
-    public class ListLoggerMixin<T> : InterceptorMixin<IList<T>>
+    public class ListLoggerMixin<T> : InterceptorMixin<T> where T : class
     {
         protected override Object GetIndexProperty(PropertyInfo propertyInfo, Object[] args)
         {

@@ -43,10 +43,11 @@ namespace ProxyMixin.Builders
         public static void DefineInterface(TypeBuilder typeBuilder, Type interfaceType, Type implementType,
             Action<ILGenerator, MethodInfo, MethodInfo> ilGenerator)
         {
+			var proxyMethodBuilder = new ProxyMethodBuilder(typeBuilder);
             InterfaceMapping mapping = implementType.GetInterfaceMap(interfaceType);
             for (int i = 0; i < mapping.InterfaceMethods.Length; i++)
-                mapping.TargetMethods[i] = ProxyBuilderHelper.DefineMethod(typeBuilder, mapping.InterfaceMethods[i],
-                    il => ilGenerator(il, mapping.InterfaceMethods[i], mapping.TargetMethods[i]));
+                mapping.TargetMethods[i] = proxyMethodBuilder.DefineMethod(mapping.InterfaceMethods[i],
+					il => ilGenerator(il, mapping.InterfaceMethods[i], mapping.TargetMethods[i]));
 
             foreach (PropertyInfo propertyInfo in interfaceType.GetProperties())
             {
@@ -70,13 +71,20 @@ namespace ProxyMixin.Builders
                 ProxyBuilderHelper.DefineEvent(typeBuilder, eventInfo, addMethodBuilder, removeMethodBuilder);
             }
         }
-        public static MethodBuilder DefineMethod(TypeBuilder typeBuilder, MethodInfo methodInfo, Action<ILGenerator> ilGenerator)
+        public static MethodBuilder DefineMethod2(TypeBuilder typeBuilder, MethodInfo methodInfo, Action<ILGenerator> ilGenerator)
         {
+			var methodAttributes = MethodAttributes.Private | MethodAttributes.Virtual | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Final;
+			if (methodInfo.DeclaringType.IsAssignableFrom(typeBuilder.BaseType))
+			{
+				InterfaceMapping mapping = typeBuilder.BaseType.GetInterfaceMap(methodInfo.DeclaringType);
+				MethodInfo wrappedMethodInfo = GetTargetMethodInfo(ref mapping, methodInfo);
+				if (!wrappedMethodInfo.IsFinal)
+					methodAttributes = MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig;
+			}
+
             String methodName = methodInfo.DeclaringType.FullName + "." + methodInfo.Name;
             Type[] parameterTypes = methodInfo.GetParameters().Select(p => p.ParameterType).ToArray();
-            MethodBuilder methodBuilder = typeBuilder.DefineMethod(methodName,
-                MethodAttributes.Private | MethodAttributes.Virtual | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Final,
-                methodInfo.ReturnType, parameterTypes);
+            MethodBuilder methodBuilder = typeBuilder.DefineMethod(methodName, methodAttributes, methodInfo.ReturnType, parameterTypes);
 
             ilGenerator(methodBuilder.GetILGenerator());
             typeBuilder.DefineMethodOverride(methodBuilder, methodInfo);
