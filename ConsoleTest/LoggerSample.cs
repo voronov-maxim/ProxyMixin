@@ -1,5 +1,6 @@
 ﻿using ProxyMixin;
-using ProxyMixin.Factories;
+using ProxyMixin.Ctors;
+using ProxyMixin.MethodInfoInvokers;
 using ProxyMixin.Mixins;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ using System.Text;
 
 namespace ConsoleTest
 {
-    public class ListLoggerMixin<T> : InterceptorMixin<T> where T : class
+    public class LoggerMixin<T, I> : InterceptorMixin<T, I> where T : I where I : class
     {
         protected override Object GetIndexProperty(PropertyInfo propertyInfo, Object[] args)
         {
@@ -24,12 +25,12 @@ namespace ConsoleTest
             LogHelper.GetProperty(propertyInfo, result);
             return result;
         }
-        protected override Object Invoke(MethodInfo methodInfo, Object[] args)
-        {
-            Object result = base.Invoke(methodInfo, args);
-            LogHelper.Invoke(methodInfo, args, result);
-            return result;
-        }
+		protected override Object Invoke(MethodInfoInvoker invoker, MethodInfoInvokerParameters parameters)
+		{
+			Object result = invoker.Invoke(parameters);
+			//LogHelper.Invoke(methodInfo, args, result);
+			return result;
+		}
         protected override void SetIndexProperty(PropertyInfo propertyInfo, Object[] args)
         {
             base.SetIndexProperty(propertyInfo, args);

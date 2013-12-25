@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ConsoleApplication1">
+      <HintPath>..\..\..\..\Users\mvoronov\Documents\Visual Studio 2010\Projects\ConsoleApplication1\ConsoleApplication1\bin\Release\ConsoleApplication1.exe</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

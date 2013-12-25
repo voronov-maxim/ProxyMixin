@@ -60,7 +60,7 @@ namespace ProxyMixin.Builders
         }
         public static Type CreateType<T>(params Object[] mixins)
         {
-            return new ProxyBuilder(ProxyFactory.GetTypeBuilder<T>()).CreateTypeInternal<T>(mixins);
+            return new ProxyBuilder(ProxyCtor.GetTypeBuilder<T>()).CreateTypeInternal<T>(mixins);
         }
         private Type CreateTypeInternal<T>(params Object[] mixins)
         {

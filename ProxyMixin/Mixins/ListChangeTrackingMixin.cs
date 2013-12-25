@@ -1,4 +1,4 @@
-﻿using ProxyMixin.Factories;
+﻿using ProxyMixin.Ctors;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -34,11 +34,11 @@ namespace ProxyMixin.Mixins
         private readonly Object _syncRoot;
         private IList<K> _interfaceInvoker;
 
-        public ListChangeTrackingMixin(ChangeTrackingFactory factory, String isChangedPropertyName = null)
+        public ListChangeTrackingMixin(ChangeTrackingCtor factory, String isChangedPropertyName = null)
             : this(factory, isChangedPropertyName, null)
         {
         }
-        public ListChangeTrackingMixin(ChangeTrackingFactory factory, String isChangedPropertyName, IChangeTrackingMixin parent) :
+        public ListChangeTrackingMixin(ChangeTrackingCtor factory, String isChangedPropertyName, IChangeTrackingMixin parent) :
             base(factory, isChangedPropertyName, parent)
         {
             _syncRoot = new Object();
@@ -82,7 +82,7 @@ namespace ProxyMixin.Mixins
         }
         protected override void OnProxyObjectChanged()
         {
-            _interfaceInvoker = ProxyFactory.GetMethodInvoker<T, IList<K>>((T)base.ProxyObject);
+            _interfaceInvoker = ProxyCtor.GetMethodInvoker<T, IList<K>>((T)base.ProxyObject);
         }
         public bool Remove(K item)
         {

@@ -10,14 +10,14 @@ namespace ProxyMixin.Builders
     public sealed class MethodInfoMapping
     {
         private readonly MemberInfo _memberInfo;
-        private readonly MethodInfo _getOrAddMethodInfo;
-        private readonly MethodInfo _setOrRemoveMethodInfo;
+        private readonly MethodInfo _methodInfoGetOrAdd;
+        private readonly MethodInfo _methodInfoSetOrRemove;
 
         public MethodInfoMapping(MemberInfo memberInfo, MethodInfo getOrAddMethodInfo, MethodInfo setOrRemoveMethodInfo)
         {
             _memberInfo = memberInfo;
-            _getOrAddMethodInfo = getOrAddMethodInfo;
-            _setOrRemoveMethodInfo = setOrRemoveMethodInfo;
+            _methodInfoGetOrAdd = getOrAddMethodInfo;
+            _methodInfoSetOrRemove = setOrRemoveMethodInfo;
         }
 
         public FieldBuilder FieldBuilder
@@ -25,11 +25,21 @@ namespace ProxyMixin.Builders
             get;
             set;
         }
-        public MethodInfo GetOrAddMethodInfo
+		public FieldBuilder FieldBuilderGetOrAdd
+		{
+			get;
+			set;
+		}
+		public FieldBuilder FieldBuilderSetOrRemove
+		{
+			get;
+			set;
+		}
+		public MethodInfo MethodInfoGetOrAdd
         {
             get
             {
-                return _getOrAddMethodInfo;
+                return _methodInfoGetOrAdd;
             }
         }
         public MemberInfo MemberInfo
@@ -39,11 +49,11 @@ namespace ProxyMixin.Builders
                 return _memberInfo;
             }
         }
-        public MethodInfo SetOrRemoveMethodInfo
+        public MethodInfo MethodInfoSetOrRemove
         {
             get
             {
-                return _setOrRemoveMethodInfo;
+                return _methodInfoSetOrRemove;
             }
         }
 

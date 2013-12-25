@@ -40,7 +40,7 @@ namespace WpfTest
                 }
             };
 
-            var factory = new ProxyMixin.Factories.ChangeTrackingFactory();
+            var factory = new ProxyMixin.Ctors.ChangeTrackingCtor();
             base.DataContext = factory.Create(viewModel1, "IsChanged");
         }
 

@@ -1,4 +1,4 @@
-﻿using ProxyMixin.Factories;
+﻿using ProxyMixin.Ctors;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -33,11 +33,11 @@ namespace ProxyMixin.Mixins
     public class ChangeTrackingMixin<T> : PropertyChangedMixin<T>, IRevertibleChangeTracking, IChangeTrackingMixin
     {
         private ChangedStates _changedStates;
-        private readonly ChangeTrackingFactory _factory;
+        private readonly ChangeTrackingCtor _factory;
         private readonly Type[] _noImplementInterfaces;
         private readonly IChangeTrackingMixin _parent;
 
-        public ChangeTrackingMixin(ChangeTrackingFactory factory, String isChangedPropertyName, IChangeTrackingMixin parent)
+        public ChangeTrackingMixin(ChangeTrackingCtor factory, String isChangedPropertyName, IChangeTrackingMixin parent)
             : base(isChangedPropertyName)
         {
             _noImplementInterfaces = new[] { typeof(IChangeTrackingMixin) };
@@ -101,7 +101,7 @@ namespace ProxyMixin.Mixins
                 return _parent;
             }
         }
-        protected ChangeTrackingFactory Factory
+        protected ChangeTrackingCtor Factory
         {
             get
             {

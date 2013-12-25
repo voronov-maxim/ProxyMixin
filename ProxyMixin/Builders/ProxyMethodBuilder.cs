@@ -19,8 +19,9 @@ namespace ProxyMixin.Builders
 
 		public MethodBuilder DefineMethod(MethodInfo methodInfo, Action<ILGenerator> ilGenerator)
 		{
-			String methodName = methodInfo.DeclaringType.FullName + "." + methodInfo.Name;
 			MethodAttributes methodAttributes = GetMethodAttributes(methodInfo);
+			String methodName = (methodAttributes & MethodAttributes.Private) == 0 ?
+				methodInfo.Name : methodInfo.DeclaringType.FullName + "." + methodInfo.Name;
 			Type[] parameterTypes = methodInfo.GetParameters().Select(p => p.ParameterType).ToArray();
 			MethodBuilder methodBuilder = _typeBuilder.DefineMethod(methodName, methodAttributes, methodInfo.ReturnType, parameterTypes);
 

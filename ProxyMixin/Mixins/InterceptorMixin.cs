@@ -1,4 +1,5 @@
 ﻿using ProxyMixin.Builders;
+using ProxyMixin.MethodInfoInvokers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Reflection.Emit;
 
 namespace ProxyMixin.Mixins
 {
-    public class InterceptorMixin<I> : IDynamicMixin, IMixinSource where I : class
+    public class InterceptorMixin<T, I> : IDynamicMixin, IMixinSource where T : I where I : class
     {
         private struct InterfaceMethodMapping
         {
@@ -23,32 +24,41 @@ namespace ProxyMixin.Mixins
 
         private sealed class InterfaceBuilder : InterfaceBuilder<I>
         {
-            private readonly InterceptorMixin<I> _mixin;
+            private readonly InterceptorMixin<T, I> _mixin;
 
-            public InterfaceBuilder(TypeBuilder typeBuilder, InterceptorMixin<I> mixin)
+            public InterfaceBuilder(TypeBuilder typeBuilder, InterceptorMixin<T, I> mixin)
                 : base(typeBuilder)
             {
                 _mixin = mixin;
             }
 
-            private void CreateField(MethodInfoMapping mapping)
+			private void CreateGetField(MethodInfoMapping mapping)
+			{
+				Type type = mapping.MemberInfo.DeclaringType;
+				String fieldName = type.Namespace + "." + type.Name + "." + mapping.MethodInfoGetOrAdd.Name;
+				mapping.FieldBuilderGetOrAdd = base.TypeBuilder.DefineField(fieldName, typeof(MethodInfoInvoker), FieldAttributes.Static | FieldAttributes.Private);
+			}
+			private void CreateMethodField(MethodInfoMapping mapping)
             {
-                if (mapping.FieldBuilder != null)
-                    return;
-
                 Type type = mapping.MemberInfo.DeclaringType;
                 String fieldName = type.Namespace + "." + type.Name + "." + mapping.MemberInfo.Name;
-                mapping.FieldBuilder = base.TypeBuilder.DefineField(fieldName, mapping.MemberInfo.GetType(), FieldAttributes.Static | FieldAttributes.Private);
+				mapping.FieldBuilder = base.TypeBuilder.DefineField(fieldName, typeof(MethodInfoInvoker), FieldAttributes.Static | FieldAttributes.Private);
             }
-            protected override void GenerateGetIndexProperty(ILGenerator il, MethodInfoMapping mapping)
+			private void CreateSetField(MethodInfoMapping mapping)
+			{
+				Type type = mapping.MemberInfo.DeclaringType;
+				String fieldName = type.Namespace + "." + type.Name + "." + mapping.MethodInfoSetOrRemove.Name;
+				mapping.FieldBuilderSetOrRemove = base.TypeBuilder.DefineField(fieldName, typeof(MethodInfoInvoker), FieldAttributes.Static | FieldAttributes.Private);
+			}
+			protected override void GenerateGetIndexProperty(ILGenerator il, MethodInfoMapping mapping)
             {
-                CreateField(mapping);
+                CreateGetField(mapping);
                 MethodInfo getPropertyInfo = ((Func<PropertyInfo, Object[], Object>)_mixin.GetIndexProperty).Method;
-                GenerateMethod(il, mapping.FieldBuilder, mapping.GetOrAddMethodInfo, getPropertyInfo);
+                GenerateMethod(il, mapping.FieldBuilder, mapping.MethodInfoGetOrAdd, getPropertyInfo);
             }
             protected override void GenerateGetProperty(ILGenerator il, MethodInfoMapping mapping)
             {
-                CreateField(mapping);
+                CreateGetField(mapping);
                 MethodInfo getPropertyInfo = ((Func<PropertyInfo, Object>)_mixin.GetProperty).Method;
 
                 il.Emit(OpCodes.Ldarg_0);
@@ -56,66 +66,59 @@ namespace ProxyMixin.Mixins
                 il.Emit(OpCodes.Ldsfld, mapping.FieldBuilder);
 
                 il.Emit(OpCodes.Call, getPropertyInfo);
-                if (mapping.GetOrAddMethodInfo.ReturnType.IsValueType)
-                    il.Emit(OpCodes.Unbox_Any, mapping.GetOrAddMethodInfo.ReturnType);
+                if (mapping.MethodInfoGetOrAdd.ReturnType.IsValueType)
+                    il.Emit(OpCodes.Unbox_Any, mapping.MethodInfoGetOrAdd.ReturnType);
                 il.Emit(OpCodes.Ret);
             }
             protected override void GenerateMethod(ILGenerator il, MethodInfoMapping mapping)
             {
-                CreateField(mapping);
-                MethodInfo invokeInfo = ((Func<MethodInfo, Object[], Object>)_mixin.Invoke).Method;
+                CreateMethodField(mapping);
+                MethodInfo invokeInfo = ((Func<MethodInfoInvoker, MethodInfoInvokerParameters, Object>)_mixin.Invoke).Method;
                 GenerateMethod(il, mapping.FieldBuilder, (MethodInfo)mapping.MemberInfo, invokeInfo);
             }
             private static void GenerateMethod(ILGenerator il, FieldBuilder fieldBuilder, MethodInfo interfaceInfo, MethodInfo invokeInfo)
             {
-                ParameterInfo[] parameterInfos = interfaceInfo.GetParameters();
-                il.DeclareLocal(typeof(Object[]));
+				MethodInfo createParametersInfo = MethodInfoInvoker.GetCreateParametersMethodInfo(interfaceInfo, typeof(T));
 
-                il.Emit(OpCodes.Ldc_I4, parameterInfos.Length);
-                il.Emit(OpCodes.Newarr, typeof(Object));
-                il.Emit(OpCodes.Stloc_0);
+				il.Emit(OpCodes.Ldarg_0);
 
-                il.Emit(OpCodes.Ldarg_0);
+				il.Emit(OpCodes.Ldsfld, fieldBuilder);
 
-                il.Emit(OpCodes.Ldsfld, fieldBuilder);
+				var maps = typeof(InterceptorMixin<T, I>).GetInterfaceMap(typeof(IDynamicMixin));
+				var prop = typeof(InterceptorMixin<T, I>).GetProperty("ProxyObject");
+				var trg = prop.GetGetMethod();
 
-                for (int i = 0; i < parameterInfos.Length; i++)
-                {
-                    il.Emit(OpCodes.Ldloc_0);
-                    il.Emit(OpCodes.Ldc_I4, i);
+				il.Emit(OpCodes.Ldsfld, fieldBuilder);
+				int parameterCount = interfaceInfo.GetParameters().Length + 1;
+				il.Emit(OpCodes.Ldarg_0);
+				il.Emit(OpCodes.Call, trg);
+				for (int i = 1; i < parameterCount; i++)
+					il.Emit(OpCodes.Ldarg, i);
+				il.Emit(OpCodes.Callvirt, createParametersInfo);
+				il.Emit(OpCodes.Call, invokeInfo);
 
-                    il.Emit(OpCodes.Ldarg, i + 1);
-                    if (parameterInfos[i].ParameterType.IsValueType)
-                        il.Emit(OpCodes.Box, parameterInfos[i].ParameterType);
-
-                    il.Emit(OpCodes.Stelem_Ref);
-                }
-
-                il.Emit(OpCodes.Ldloc_0);
-
-                il.Emit(OpCodes.Call, invokeInfo);
-                if (interfaceInfo.ReturnType == typeof(void))
-                {
-                    if (invokeInfo.ReturnType != typeof(void))
-                        il.Emit(OpCodes.Pop);
-                }
-                else
-                {
-                    if (interfaceInfo.ReturnType.IsValueType)
-                        il.Emit(OpCodes.Unbox_Any, interfaceInfo.ReturnType);
-                }
+				if (interfaceInfo.ReturnType == typeof(void))
+				{
+					if (invokeInfo.ReturnType != typeof(void))
+						il.Emit(OpCodes.Pop);
+				}
+				else
+				{
+					if (interfaceInfo.ReturnType.IsValueType)
+						il.Emit(OpCodes.Unbox_Any, interfaceInfo.ReturnType);
+				}
 
                 il.Emit(OpCodes.Ret);
             }
             protected override void GenerateSetIndexProperty(ILGenerator il, MethodInfoMapping mapping)
             {
-                CreateField(mapping);
+                CreateSetField(mapping);
                 MethodInfo setPropertyInfo = ((Action<PropertyInfo, Object[]>)_mixin.SetIndexProperty).Method;
-                GenerateMethod(il, mapping.FieldBuilder, mapping.SetOrRemoveMethodInfo, setPropertyInfo);
+                GenerateMethod(il, mapping.FieldBuilder, mapping.MethodInfoSetOrRemove, setPropertyInfo);
             }
             protected override void GenerateSetProperty(ILGenerator il, MethodInfoMapping mapping)
             {
-                CreateField(mapping);
+                CreateSetField(mapping);
                 MethodInfo setPropertyInfo = ((Action<PropertyInfo, Object>)_mixin.SetProperty).Method;
 
                 il.Emit(OpCodes.Ldarg_0);
@@ -138,7 +141,7 @@ namespace ProxyMixin.Mixins
 
         private IDynamicMixin Create()
         {
-            ModuleBuilder moduleBuilder = ProxyFactory.GetModuleBuilder();
+            ModuleBuilder moduleBuilder = ProxyCtor.GetModuleBuilder();
             String name = "Interceptor." + typeof(I).FullName;
             TypeBuilder typeBuilder = moduleBuilder.DefineType(name, TypeAttributes.Class | TypeAttributes.Sealed, base.GetType(), new Type[] { typeof(I) });
 
@@ -146,11 +149,28 @@ namespace ProxyMixin.Mixins
             var mappings = interfaceBuilder.DefineInterface();
             Type interceptorType = typeBuilder.CreateType();
 
-            foreach (MethodInfoMapping mapping in mappings)
-            {
-                FieldInfo fieldInfo = interceptorType.GetField(mapping.FieldBuilder.Name, BindingFlags.NonPublic | BindingFlags.Static);
-                fieldInfo.SetValue(null, mapping.MemberInfo);
-            }
+			var interfaceMap = typeof(T).GetInterfaceMap(typeof(I));
+			foreach (MethodInfoMapping mapping in mappings)
+				if (mapping.FieldBuilder != null)
+				{
+					var methodInfo = ProxyBuilderHelper.GetTargetMethodInfo(ref interfaceMap, (MethodInfo)mapping.MemberInfo);
+					FieldInfo fieldInfo = interceptorType.GetField(mapping.FieldBuilder.Name, BindingFlags.NonPublic | BindingFlags.Static);
+					fieldInfo.SetValue(null, MethodInfoInvoker.Create(methodInfo));
+				}
+				else
+				{
+					if (mapping.FieldBuilderGetOrAdd != null)
+					{
+						FieldInfo fieldInfo = interceptorType.GetField(mapping.FieldBuilderGetOrAdd.Name, BindingFlags.NonPublic | BindingFlags.Static);
+						fieldInfo.SetValue(null, MethodInfoInvoker.Create(mapping.MethodInfoGetOrAdd));
+					}
+					if (mapping.FieldBuilderSetOrRemove != null)
+					{
+						FieldInfo fieldInfo = interceptorType.GetField(mapping.FieldBuilderSetOrRemove.Name, BindingFlags.NonPublic | BindingFlags.Static);
+						fieldInfo.SetValue(null, MethodInfoInvoker.Create(mapping.MethodInfoSetOrRemove));
+					}
+				}
+
             return (IDynamicMixin)Activator.CreateInstance(interceptorType);
         }
         private MethodInfo FindTargetMethod(MethodInfo interfaceMethod)
@@ -189,10 +209,9 @@ namespace ProxyMixin.Mixins
             MethodInfo targetMethodInfo = FindTargetMethod(propertyInfo.GetGetMethod(false));
             return targetMethodInfo.Invoke(ProxyObject, null);
         }
-        protected virtual Object Invoke(MethodInfo methodInfo, Object[] args)
+        protected virtual Object Invoke(MethodInfoInvoker invoker, MethodInfoInvokerParameters parameters)
         {
-            MethodInfo targetMethodInfo = FindTargetMethod(methodInfo);
-            return targetMethodInfo.Invoke(ProxyObject, args);
+			return invoker.Invoke(parameters);
         }
         protected virtual void SetIndexProperty(PropertyInfo propertyInfo, Object[] args)
         {

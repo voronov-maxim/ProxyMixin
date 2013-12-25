@@ -57,8 +57,7 @@ namespace ProxyMixin.Builders
             il.Emit(OpCodes.Newobj, ctorBuilder);
             il.Emit(OpCodes.Ret);
         }
-        private void GenerateMethod(ILGenerator il,
-            MethodInfo interfaceMethod, MethodInfo targetMethod)
+        private void GenerateMethod(ILGenerator il, MethodInfo interfaceMethod, MethodInfo targetMethod)
         {
             MethodInfo stub;
             if (targetMethod.IsPrivate)

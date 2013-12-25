@@ -1,4 +1,4 @@
-﻿using ProxyMixin.Factories;
+﻿using ProxyMixin.Ctors;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,8 +26,7 @@ namespace ConsoleTest
         public static void LoggerSample()
         {
             var list = new List<int>();
-            var factory = new InterceptorFactory();
-            var proxy = factory.Create(list, new ListLoggerMixin<IList<int>>());
+			var proxy = InterceptorCtor.Create(list, new LoggerMixin<List<int>, IList<int>>());
 
             for (int i = 0; i < 10; i++)
                 proxy.Add(i);

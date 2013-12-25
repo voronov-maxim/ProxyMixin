@@ -54,24 +54,24 @@ namespace ProxyMixin.Builders
                 {
                     MethodBuilder getMethodBuilder = null;
                     int indexParameterCount = -1;
-                    if (mapping.GetOrAddMethodInfo != null)
+                    if (mapping.MethodInfoGetOrAdd != null)
                     {
-                        indexParameterCount = mapping.GetOrAddMethodInfo.GetParameters().Length;
+                        indexParameterCount = mapping.MethodInfoGetOrAdd.GetParameters().Length;
                         if (indexParameterCount == 0)
-							getMethodBuilder = proxyMethodBuilder.DefineMethod(mapping.GetOrAddMethodInfo, il => GenerateGetProperty(il, mapping));
+							getMethodBuilder = proxyMethodBuilder.DefineMethod(mapping.MethodInfoGetOrAdd, il => GenerateGetProperty(il, mapping));
                         else
-							getMethodBuilder = proxyMethodBuilder.DefineMethod(mapping.GetOrAddMethodInfo, il => GenerateGetIndexProperty(il, mapping));
+							getMethodBuilder = proxyMethodBuilder.DefineMethod(mapping.MethodInfoGetOrAdd, il => GenerateGetIndexProperty(il, mapping));
                     }
 
                     MethodBuilder setMethodBuilder = null;
-                    if (mapping.SetOrRemoveMethodInfo != null)
+                    if (mapping.MethodInfoSetOrRemove != null)
                     {
                         if (indexParameterCount == -1)
-                            indexParameterCount = mapping.SetOrRemoveMethodInfo.GetParameters().Length - 1;
+                            indexParameterCount = mapping.MethodInfoSetOrRemove.GetParameters().Length - 1;
                         if (indexParameterCount == 0)
-							setMethodBuilder = proxyMethodBuilder.DefineMethod(mapping.SetOrRemoveMethodInfo, il => GenerateSetProperty(il, mapping));
+							setMethodBuilder = proxyMethodBuilder.DefineMethod(mapping.MethodInfoSetOrRemove, il => GenerateSetProperty(il, mapping));
                         else
-							setMethodBuilder = proxyMethodBuilder.DefineMethod(mapping.SetOrRemoveMethodInfo, il => GenerateSetIndexProperty(il, mapping));
+							setMethodBuilder = proxyMethodBuilder.DefineMethod(mapping.MethodInfoSetOrRemove, il => GenerateSetIndexProperty(il, mapping));
                     }
 
                     ProxyBuilderHelper.DefineProperty(TypeBuilder, propertyInfo, getMethodBuilder, setMethodBuilder);
@@ -79,12 +79,12 @@ namespace ProxyMixin.Builders
                 else if ((eventInfo = mapping.MemberInfo as EventInfo) != null)
                 {
                     MethodBuilder addMethodBuilder = null;
-                    if (mapping.GetOrAddMethodInfo != null)
-						addMethodBuilder = proxyMethodBuilder.DefineMethod(mapping.GetOrAddMethodInfo, il => GenerateAddEvent(il, mapping));
+                    if (mapping.MethodInfoGetOrAdd != null)
+						addMethodBuilder = proxyMethodBuilder.DefineMethod(mapping.MethodInfoGetOrAdd, il => GenerateAddEvent(il, mapping));
 
                     MethodBuilder removeMethodBuilder = null;
-                    if (mapping.SetOrRemoveMethodInfo != null)
-						addMethodBuilder = proxyMethodBuilder.DefineMethod(mapping.SetOrRemoveMethodInfo, il => GenerateRemoveEvent(il, mapping));
+                    if (mapping.MethodInfoSetOrRemove != null)
+						addMethodBuilder = proxyMethodBuilder.DefineMethod(mapping.MethodInfoSetOrRemove, il => GenerateRemoveEvent(il, mapping));
 
                     ProxyBuilderHelper.DefineProperty(TypeBuilder, propertyInfo, addMethodBuilder, removeMethodBuilder);
                 }

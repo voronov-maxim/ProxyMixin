@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 
 namespace ProxyMixin
 {
-    public class ProxyFactory
+    public static class ProxyCtor
     {
         private sealed class ProxyTypeDef
         {
@@ -67,15 +67,11 @@ namespace ProxyMixin
         private static readonly Dictionary<ProxyTypeDef, Type> _typeProxyCache = new Dictionary<ProxyTypeDef, Type>();
         private static readonly Dictionary<Type, Delegate> _interfaceInvokerCache = new Dictionary<Type, Delegate>();
 
-        public ProxyFactory()
-        {
-        }
-
         public static T Create<T>(T wrappedObject, params Object[] mixins)
         {
-            return new ProxyFactory().CreateCore(wrappedObject, ProxyMapper<T>.Mapper, mixins);
+            return CreateCore(wrappedObject, ProxyMapper<T>.Mapper, mixins);
         }
-        protected T CreateCore<T>(T wrappedObject, IProxyMapper proxyMapper, Object[] mixins)
+        internal static T CreateCore<T>(T wrappedObject, IProxyMapper proxyMapper, Object[] mixins)
         {
             Object[] mixins2 = mixins;
             for (int i = 0; i < mixins2.Length; i++)
@@ -104,16 +100,13 @@ namespace ProxyMixin
 
             return ProxyBuilder.CreateProxy<T>(proxyType, wrappedObject, proxyMapper, mixins2);
         }
-        public static T CreateExpando<T>(T wrappedObject)
-        {
-            Object[] mixins = { new Mixins.ExpandoMixin<T>() };
-            return new ProxyFactory().CreateCore(wrappedObject, ProxyMapper<T>.Mapper, mixins);
-        }
-        public static T CreatePropertyChanged<T>(T wrappedObject, String isChangedPropertyName = null)
-        {
-            Object[] mixins = { new Mixins.PropertyChangedMixin<T>(isChangedPropertyName) };
-            return new ProxyFactory().CreateCore(wrappedObject, ProxyMapper<T>.Mapper, mixins);
-        }
+        public static I GetMethodInvoker<I>(Object interfaceObject)
+		{
+			Type baseType = interfaceObject.GetType().BaseType;
+			MethodInfo objectMethodInfo = ((Func<Object, Object>)GetMethodInvoker<Object, Object>).Method;
+			MethodInfo methodInfo = objectMethodInfo.GetGenericMethodDefinition().MakeGenericMethod(baseType, typeof(I));
+			return (I)methodInfo.Invoke(null, new Object[] { interfaceObject });
+		}
         public static I GetMethodInvoker<T, I>(T interfaceObject)
             where T : I
             where I : class

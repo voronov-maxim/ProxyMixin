@@ -7,13 +7,13 @@ using System.Windows.Forms;
 using ProxyMixin.Mixins;
 using ProxyMixin.Mappers;
 
-namespace ProxyMixin.Factories
+namespace ProxyMixin.Ctors
 {
-    public sealed class ChangeTrackingFactory : ProxyFactory
+    public sealed class ChangeTrackingCtor
     {
         private readonly Dictionary<Object, IDynamicProxy> _proxies;
 
-        public ChangeTrackingFactory()
+        public ChangeTrackingCtor()
         {
             _proxies = new Dictionary<Object, IDynamicProxy>();
         }
@@ -40,7 +40,7 @@ namespace ProxyMixin.Factories
             if (proxy == null)
             {
                 Object[] mixins = { new Mixins.ChangeTrackingMixin<T>(this, isChangedPropertyName, parent) };
-                proxy = base.CreateCore(wrappedObject, PropertyChangedProxyMapper<T>.Mapper, mixins);
+                proxy = ProxyCtor.CreateCore(wrappedObject, PropertyChangedProxyMapper<T>.Mapper, mixins);
             }
 
             _proxies[wrappedObject] = (IDynamicProxy)proxy;
@@ -57,7 +57,7 @@ namespace ProxyMixin.Factories
 
             Type mixinType = typeof(ListChangeTrackingMixin<,>).MakeGenericType(typeof(T), k);
             Object[] mixins = { (IDynamicMixin)Activator.CreateInstance(mixinType, this, isChangedPropertyName, parent) };
-            return base.CreateCore(wrappedObject, PropertyChangedProxyMapper<T>.Mapper, mixins);
+            return ProxyCtor.CreateCore(wrappedObject, PropertyChangedProxyMapper<T>.Mapper, mixins);
         }
         public void Update(IChangeTrackingMixin parent, bool acceptChanges)
         {

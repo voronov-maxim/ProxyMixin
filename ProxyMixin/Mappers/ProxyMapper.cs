@@ -38,7 +38,7 @@ namespace ProxyMixin.Mappers
         {
             Type type = typeof(T);
             String name = base.GetType().Name + "[" + typeof(T).Name + "]";
-            var dynamicMethod = new DynamicMethod(name, null, new Type[] { type, type }, ProxyFactory.GetModuleBuilder(), true);
+            var dynamicMethod = new DynamicMethod(name, null, new Type[] { type, type }, ProxyCtor.GetModuleBuilder(), true);
             ILGenerator il = dynamicMethod.GetILGenerator();
 
             while (type != typeof(Object))
