@@ -1,5 +1,6 @@
 ﻿using ProxyMixin.Builders;
 using ProxyMixin.Mappers;
+using ProxyMixin.MethodInfoInvokers;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -63,6 +64,7 @@ namespace ProxyMixin
         }
 
         private static int _counter;
+        private static IndirectInvoker _indirectInvoker;
         private static ModuleBuilder _moduleBuilder;
         private static readonly Dictionary<ProxyTypeDef, Type> _typeProxyCache = new Dictionary<ProxyTypeDef, Type>();
         private static readonly Dictionary<Type, Delegate> _interfaceInvokerCache = new Dictionary<Type, Delegate>();
@@ -128,7 +130,7 @@ namespace ProxyMixin
 
             return ctor(interfaceObject);
         }
-        internal static ModuleBuilder GetModuleBuilder()
+        public static ModuleBuilder GetModuleBuilder()
         {
             if (_moduleBuilder == null)
             {
@@ -143,6 +145,16 @@ namespace ProxyMixin
             ModuleBuilder moduleBuilder = GetModuleBuilder();
             String name = "Proxy" + typeof(T).Name + "(" + (++_counter).ToString() + ")";
             return moduleBuilder.DefineType(name, TypeAttributes.Class | TypeAttributes.Sealed, typeof(T));
+        }
+
+        public static IndirectInvoker IndirectInvoker
+        {
+            get
+            {
+                if (_indirectInvoker == null)
+                    _indirectInvoker = new IndirectInvoker(GetModuleBuilder());
+                return _indirectInvoker;
+            }
         }
     }
 }

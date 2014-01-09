@@ -5,8 +5,8 @@ namespace ProxyMixin.MethodInfoInvokers
 {
 	public abstract class MethodInfoInvoker<T> : MethodInfoInvoker
 	{
-		public MethodInfoInvoker(MethodInfo methodInfo)
-			: base(methodInfo)
+        public MethodInfoInvoker(MethodInfo methodInfo, IndirectInvoker indirectInvoker)
+            : base(methodInfo, indirectInvoker)
 		{
 		}
 
@@ -23,8 +23,8 @@ namespace ProxyMixin.MethodInfoInvokers
 
 	public abstract class MethodInfoInvoker<T, T1> : MethodInfoInvoker
 	{
-		public MethodInfoInvoker(MethodInfo methodInfo)
-			: base(methodInfo)
+        public MethodInfoInvoker(MethodInfo methodInfo, IndirectInvoker indirectInvoker)
+            : base(methodInfo, indirectInvoker)
 		{
 		}
 
@@ -41,17 +41,17 @@ namespace ProxyMixin.MethodInfoInvokers
 
 	public abstract class MethodInfoInvoker<T, T1, T2> : MethodInfoInvoker
 	{
-		public MethodInfoInvoker(MethodInfo methodInfo)
-			: base(methodInfo)
+        public MethodInfoInvoker(MethodInfo methodInfo, IndirectInvoker indirectInvoker)
+            : base(methodInfo, indirectInvoker)
 		{
 		}
 
 		public override MethodInfoInvokerParameters CreateParameters<P, P1, P2>(P target, P1 p1, P2 p2)
 		{
-			if (typeof(T) == typeof(P))
-				return new MethodInfoInvokerParameters<P, P1, P2, Dummy, Dummy, Dummy, Dummy, Dummy, Dummy, Dummy>(target, p1, p2);
+            if (typeof(T) == typeof(P))
+                return new MethodInfoInvokerParameters<P, P1, P2, Dummy, Dummy, Dummy, Dummy, Dummy, Dummy, Dummy>(target, p1, p2);
 
-			T t = (T)(Object)target;
+            T t = (T)(Object)target;
 			return new MethodInfoInvokerParameters<T, P1, P2, Dummy, Dummy, Dummy, Dummy, Dummy, Dummy, Dummy>(t, p1, p2);
 		}
 		public abstract override Object Invoke(MethodInfoInvokerParameters parameters);
@@ -59,8 +59,8 @@ namespace ProxyMixin.MethodInfoInvokers
 
 	public abstract class MethodInfoInvoker<T, T1, T2, T3> : MethodInfoInvoker
 	{
-		public MethodInfoInvoker(MethodInfo methodInfo)
-			: base(methodInfo)
+        public MethodInfoInvoker(MethodInfo methodInfo, IndirectInvoker indirectInvoker)
+            : base(methodInfo, indirectInvoker)
 		{
 		}
 
@@ -77,8 +77,8 @@ namespace ProxyMixin.MethodInfoInvokers
 
 	public abstract class MethodInfoInvoker<T, T1, T2, T3, T4> : MethodInfoInvoker
 	{
-		public MethodInfoInvoker(MethodInfo methodInfo)
-			: base(methodInfo)
+        public MethodInfoInvoker(MethodInfo methodInfo, IndirectInvoker indirectInvoker)
+            : base(methodInfo, indirectInvoker)
 		{
 		}
 
@@ -95,8 +95,8 @@ namespace ProxyMixin.MethodInfoInvokers
 
 	public abstract class MethodInfoInvoker<T, T1, T2, T3, T4, T5> : MethodInfoInvoker
 	{
-		public MethodInfoInvoker(MethodInfo methodInfo)
-			: base(methodInfo)
+        public MethodInfoInvoker(MethodInfo methodInfo, IndirectInvoker indirectInvoker)
+            : base(methodInfo, indirectInvoker)
 		{
 		}
 
@@ -113,8 +113,8 @@ namespace ProxyMixin.MethodInfoInvokers
 
 	public abstract class MethodInfoInvoker<T, T1, T2, T3, T4, T5, T6> : MethodInfoInvoker
 	{
-		public MethodInfoInvoker(MethodInfo methodInfo)
-			: base(methodInfo)
+        public MethodInfoInvoker(MethodInfo methodInfo, IndirectInvoker indirectInvoker)
+            : base(methodInfo, indirectInvoker)
 		{
 		}
 
@@ -131,8 +131,8 @@ namespace ProxyMixin.MethodInfoInvokers
 
 	public abstract class MethodInfoInvoker<T, T1, T2, T3, T4, T5, T6, T7> : MethodInfoInvoker
 	{
-		public MethodInfoInvoker(MethodInfo methodInfo)
-			: base(methodInfo)
+        public MethodInfoInvoker(MethodInfo methodInfo, IndirectInvoker indirectInvoker)
+            : base(methodInfo, indirectInvoker)
 		{
 		}
 
@@ -149,8 +149,8 @@ namespace ProxyMixin.MethodInfoInvokers
 
 	public abstract class MethodInfoInvoker<T, T1, T2, T3, T4, T5, T6, T7, T8> : MethodInfoInvoker
 	{
-		public MethodInfoInvoker(MethodInfo methodInfo)
-			: base(methodInfo)
+        public MethodInfoInvoker(MethodInfo methodInfo, IndirectInvoker indirectInvoker)
+            : base(methodInfo, indirectInvoker)
 		{
 		}
 
@@ -167,8 +167,8 @@ namespace ProxyMixin.MethodInfoInvokers
 
 	public abstract class MethodInfoInvoker<T, T1, T2, T3, T4, T5, T6, T7, T8, T9> : MethodInfoInvoker
 	{
-		public MethodInfoInvoker(MethodInfo methodInfo)
-			: base(methodInfo)
+        public MethodInfoInvoker(MethodInfo methodInfo, IndirectInvoker indirectInvoker)
+            : base(methodInfo, indirectInvoker)
 		{
 		}
 

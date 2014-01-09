@@ -1,4 +1,5 @@
 ﻿using ProxyMixin;
+using ProxyMixin.Builders;
 using ProxyMixin.Ctors;
 using ProxyMixin.MethodInfoInvokers;
 using ProxyMixin.Mixins;
@@ -11,55 +12,68 @@ using System.Text;
 
 namespace ConsoleTest
 {
-    public class LoggerMixin<T, I> : InterceptorMixin<T, I> where T : I where I : class
+    public class LoggerMixin<T, I> : InterceptorMixin<T, I>
+        where T : I
+        where I : class
     {
-        protected override Object GetIndexProperty(PropertyInfo propertyInfo, Object[] args)
+        private readonly InterfaceMethodInfoMappingCollection _mappings;
+
+        public LoggerMixin()
+            : base()
         {
-            Object result = base.GetIndexProperty(propertyInfo, args);
-            LogHelper.GetIndexProperty(propertyInfo, args, result);
+            _mappings = InterfaceMethodInfoMappingCollection.Create(typeof(I), typeof(T));
+        }
+        public LoggerMixin(IndirectInvoker indirectInvoker)
+            : base(indirectInvoker)
+        {
+        }
+
+        protected override Object GetIndexProperty(MethodInfoInvoker invoker, MethodInfoInvokerParameters parameters)
+        {
+            Object result = invoker.Invoke(parameters);
+            LogHelper.GetIndexProperty((PropertyInfo)_mappings.FindByTargetMethod(invoker.MethodInfo).ParentMember, parameters, result);
             return result;
         }
-        protected override Object GetProperty(PropertyInfo propertyInfo)
+        protected override Object GetProperty(MethodInfoInvoker invoker, MethodInfoInvokerParameters parameters)
         {
-            Object result = base.GetProperty(propertyInfo);
-            LogHelper.GetProperty(propertyInfo, result);
+            Object result = invoker.Invoke(parameters);
+            LogHelper.GetProperty((PropertyInfo)_mappings.FindByTargetMethod(invoker.MethodInfo).ParentMember, result);
             return result;
         }
-		protected override Object Invoke(MethodInfoInvoker invoker, MethodInfoInvokerParameters parameters)
-		{
-			Object result = invoker.Invoke(parameters);
-			//LogHelper.Invoke(methodInfo, args, result);
-			return result;
-		}
-        protected override void SetIndexProperty(PropertyInfo propertyInfo, Object[] args)
+        protected override Object Invoke(MethodInfoInvoker invoker, MethodInfoInvokerParameters parameters)
         {
-            base.SetIndexProperty(propertyInfo, args);
-            LogHelper.SetIndexProperty(propertyInfo, args);
+            Object result = invoker.Invoke(parameters);
+            LogHelper.Invoke(invoker, parameters, result);
+            return result;
         }
-        protected override void SetProperty(PropertyInfo propertyInfo, Object value)
+        protected override void SetIndexProperty(MethodInfoInvoker invoker, MethodInfoInvokerParameters parameters)
         {
-            base.SetProperty(propertyInfo, value);
-            LogHelper.SetProperty(propertyInfo, value);
+            invoker.Invoke(parameters);
+            LogHelper.SetIndexProperty((PropertyInfo)_mappings.FindByTargetMethod(invoker.MethodInfo).ParentMember, parameters);
+        }
+        protected override void SetProperty(MethodInfoInvoker invoker, MethodInfoInvokerParameters parameters)
+        {
+            invoker.Invoke(parameters);
+            LogHelper.SetProperty((PropertyInfo)_mappings.FindByTargetMethod(invoker.MethodInfo).ParentMember, parameters);
         }
     }
 
     public static class LogHelper
     {
-        private static void Args(StringBuilder sb, Object[] args)
+        private static void Args(StringBuilder sb, MethodInfoInvokerParameters parameters)
         {
-            for (int i = 0; i < args.Length; i++)
+            for (int i = 0; i < parameters.ParameterCount; i++)
             {
-                Object arg = args[i];
-                sb.Append(ToString(arg));
-                if (i < args.Length - 1)
+                sb.Append(ToString(parameters.GetValueAsString(i)));
+                if (i < parameters.ParameterCount - 1)
                     sb.Append(", ");
             }
         }
-        public static void GetIndexProperty(PropertyInfo propertyInfo, Object[] args, Object result)
+        public static void GetIndexProperty(PropertyInfo propertyInfo, MethodInfoInvokerParameters parameters, Object result)
         {
             var sb = new StringBuilder(propertyInfo.Name);
             sb.Append('[');
-            Args(sb, args);
+            Args(sb, parameters);
             sb.Append("]: ");
             sb.Append(ToString(result));
             sb.Append(';');
@@ -75,13 +89,13 @@ namespace ConsoleTest
 
             Trace.WriteLine(sb.ToString());
         }
-        public static void Invoke(MethodInfo methodInfo, Object[] args, Object result)
+        public static void Invoke(MethodInfoInvoker invoker, MethodInfoInvokerParameters parameters, Object result)
         {
-            var sb = new StringBuilder(methodInfo.Name);
+            var sb = new StringBuilder(invoker.MethodInfo.Name);
             sb.Append('(');
-            Args(sb, args);
+            Args(sb, parameters);
 
-            if (methodInfo.ReturnType == typeof(void))
+            if (invoker.MethodInfo.ReturnType == typeof(void))
                 sb.Append(')');
             else
             {
@@ -92,30 +106,29 @@ namespace ConsoleTest
 
             Trace.WriteLine(sb.ToString());
         }
-        public static void SetIndexProperty(PropertyInfo propertyInfo, Object[] args)
+        public static void SetIndexProperty(PropertyInfo propertyInfo, MethodInfoInvokerParameters parameters)
         {
             var sb = new StringBuilder(propertyInfo.Name);
             sb.Append('[');
 
-            for (int i = 0; i < args.Length - 1; i++)
+            for (int i = 0; i < parameters.ParameterCount - 1; i++)
             {
-                Object arg = args[i];
-                sb.Append(ToString(arg));
-                if (i < args.Length - 2)
+                sb.Append(ToString(parameters.GetValueAsString(i)));
+                if (i < parameters.ParameterCount - 2)
                     sb.Append(", ");
             }
 
             sb.Append("] = ");
-            sb.Append(ToString(args[args.Length - 1]));
+            sb.Append(ToString(parameters.GetValueAsString(parameters.ParameterCount - 1)));
             sb.Append(';');
 
             Trace.WriteLine(sb.ToString());
         }
-        public static void SetProperty(PropertyInfo propertyInfo, Object value)
+        public static void SetProperty(PropertyInfo propertyInfo, MethodInfoInvokerParameters parameters)
         {
             var sb = new StringBuilder(propertyInfo.Name);
             sb.Append(" = ");
-            sb.Append(ToString(value));
+            sb.Append(ToString(parameters.GetValueAsString(0)));
             sb.Append(';');
 
             Trace.WriteLine(sb.ToString());
@@ -123,6 +136,10 @@ namespace ConsoleTest
         private static String ToString(Object value)
         {
             return value == null ? "null" : value.ToString();
+        }
+        private static String ToString(String value)
+        {
+            return value == null ? "null" : value;
         }
     }
 }

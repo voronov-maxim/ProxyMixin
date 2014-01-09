@@ -43,13 +43,16 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Builders\InterfaceMethodInfoMapping.cs" />
+    <Compile Include="exceptions.cs" />
     <Compile Include="MethodInfoInvokers\ActionMethodInfoInvoker.cs" />
     <Compile Include="MethodInfoInvokers\FuncMethodInfoInvoker.cs" />
     <Compile Include="MethodInfoInvokers\GenericMethodInfoInvoker.cs" />
+    <Compile Include="MethodInfoInvokers\IndirectInvoker.cs" />
     <Compile Include="MethodInfoInvokers\MethodInfoInvoker.cs" />
     <Compile Include="MethodInfoInvokers\MethodInfoInvokerParameters.cs" />
     <Compile Include="Builders\ProxyMethodBuilder.cs" />
-    <Compile Include="Builders\MethodInfoMapping.cs" />
+    <Compile Include="Builders\InterfaceMethodInfo.cs" />
     <Compile Include="Ctors\ChangeTrackingCtor.cs" />
     <Compile Include="Builders\InterfaceBuilder.cs" />
     <Compile Include="Builders\InterfaceInvokerBuilder.cs" />

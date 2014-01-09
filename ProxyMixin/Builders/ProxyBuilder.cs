@@ -16,12 +16,12 @@ namespace ProxyMixin.Builders
             {
             }
 
-            protected override void GenerateGetProperty(ILGenerator il, MethodInfoMapping mapping)
+            protected override void GenerateGetProperty(ILGenerator il, InterfaceMethodInfo mapping)
             {
                 base.DefineField(mapping);
                 ProxyBuilderHelper.GenerateGetFieldMethod(il, mapping.FieldBuilder);
             }
-            protected override void GenerateSetProperty(ILGenerator il, MethodInfoMapping mapping)
+            protected override void GenerateSetProperty(ILGenerator il, InterfaceMethodInfo mapping)
             {
                 base.DefineField(mapping);
                 ProxyBuilderHelper.GenerateSetFieldMethod(il, mapping.FieldBuilder);
@@ -65,7 +65,7 @@ namespace ProxyMixin.Builders
         private Type CreateTypeInternal<T>(params Object[] mixins)
         {
             var interfaceBuilder = new DynamicProxyInterfaceBuilder(_typeBuilder);
-            MethodInfoMappingCollection mappings = interfaceBuilder.DefineInterface();
+            InterfaceMethodInfoCollection mappings = interfaceBuilder.DefineInterface();
 
             FieldBuilder mixinsField = mappings["Mixins"].FieldBuilder;
             for (int i = 0; i < mixins.Length; i++)

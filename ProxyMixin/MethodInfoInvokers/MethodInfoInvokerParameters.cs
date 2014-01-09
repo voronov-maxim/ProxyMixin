@@ -154,23 +154,23 @@ namespace ProxyMixin.MethodInfoInvokers
 			switch (index)
 			{
 				case 0:
-					return Parameter1 == null ? String.Empty : Parameter1.ToString();
+                    return Parameter1 == null ? null : Parameter1.ToString();
 				case 1:
-					return Parameter2 == null ? String.Empty : Parameter2.ToString();
+                    return Parameter2 == null ? null : Parameter2.ToString();
 				case 2:
-					return Parameter3 == null ? String.Empty : Parameter3.ToString();
+                    return Parameter3 == null ? null : Parameter3.ToString();
 				case 3:
-					return Parameter4 == null ? String.Empty : Parameter4.ToString();
+                    return Parameter4 == null ? null : Parameter4.ToString();
 				case 4:
-					return Parameter5 == null ? String.Empty : Parameter5.ToString();
+                    return Parameter5 == null ? null : Parameter5.ToString();
 				case 5:
-					return Parameter6 == null ? String.Empty : Parameter6.ToString();
+                    return Parameter6 == null ? null : Parameter6.ToString();
 				case 6:
-					return Parameter7 == null ? String.Empty : Parameter7.ToString();
+                    return Parameter7 == null ? null : Parameter7.ToString();
 				case 7:
-					return Parameter8 == null ? String.Empty : Parameter8.ToString();
+                    return Parameter8 == null ? null : Parameter8.ToString();
 				case 8:
-					return Parameter9 == null ? String.Empty : Parameter8.ToString();
+                    return Parameter9 == null ? null : Parameter8.ToString();
 			}
 
 			throw new ArgumentOutOfRangeException("index");

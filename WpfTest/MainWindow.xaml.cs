@@ -50,7 +50,6 @@ namespace WpfTest
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            var zzz = dataGrid.Items;
             ((IRevertibleChangeTracking)base.DataContext).AcceptChanges();
         }
 

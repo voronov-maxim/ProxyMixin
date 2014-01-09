@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 
 namespace ProxyMixin.Builders
 {
-	internal static class ProxyBuilderHelper
+	public static class ProxyBuilderHelper
 	{
 		public static Delegate CreateDelegateFromMethodInfo(MethodInfo methodInfo)
 		{
@@ -16,7 +16,23 @@ namespace ProxyMixin.Builders
 			ConstructorInfo ctor = delegateType.GetConstructors()[0];
 			return (Delegate)ctor.Invoke(new Object[] { null, functPtr });
 		}
-		public static void DefineEvent(TypeBuilder typeBuilder, EventInfo eventInfo,
+        public static void DefineCtor(TypeBuilder typeBuilder, FieldBuilder fieldBuilder)
+        {
+            var parameterTypes = new Type[] { fieldBuilder.FieldType };
+            ConstructorBuilder ctorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, parameterTypes);
+            ILGenerator il = ctorBuilder.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldarg_1);
+            il.Emit(OpCodes.Stfld, fieldBuilder);
+            il.Emit(OpCodes.Ret);
+
+            MethodBuilder createBuider = typeBuilder.DefineMethod("<Create>", MethodAttributes.Static | MethodAttributes.Public, typeBuilder, parameterTypes);
+            il = createBuider.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Newobj, ctorBuilder);
+            il.Emit(OpCodes.Ret);
+        }
+        public static void DefineEvent(TypeBuilder typeBuilder, EventInfo eventInfo,
 			MethodBuilder addMethodBuilder, MethodBuilder removeMethodBuilder)
 		{
 			String eventName = eventInfo.DeclaringType.FullName + "." + eventInfo.Name;

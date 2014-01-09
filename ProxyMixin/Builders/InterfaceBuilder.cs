@@ -16,7 +16,7 @@ namespace ProxyMixin.Builders
             _typeBuilder = typeBuilder;
         }
 
-        protected void DefineField(MethodInfoMapping mapping)
+        protected void DefineField(InterfaceMethodInfo mapping)
         {
             if (mapping.FieldBuilder != null)
                 return;
@@ -28,19 +28,19 @@ namespace ProxyMixin.Builders
             String name = typeof(T).FullName + "." + mapping.MemberInfo.Name;
             mapping.FieldBuilder = TypeBuilder.DefineField(name, propertyInfo.PropertyType, FieldAttributes.Private);
         }
-        public MethodInfoMappingCollection DefineInterface()
+        public InterfaceMethodInfoCollection DefineInterface()
         {
-            List<MethodInfoMapping> mappings = DefineInterface(typeof(T)).ToList();
+            List<InterfaceMethodInfo> mappings = DefineInterface(typeof(T)).ToList();
             foreach (Type interfaceType in typeof(T).GetInterfaces())
                 mappings.AddRange(DefineInterface(interfaceType));
-            return new MethodInfoMappingCollection(mappings);
+            return new InterfaceMethodInfoCollection(mappings);
         }
-        private List<MethodInfoMapping> DefineInterface(Type interfaceType)
+        private List<InterfaceMethodInfo> DefineInterface(Type interfaceType)
         {
             TypeBuilder.AddInterfaceImplementation(interfaceType);
 			var proxyMethodBuilder = new ProxyMethodBuilder(TypeBuilder);
-            var mappings = GetMethodInfoMapping(interfaceType);
-            foreach (MethodInfoMapping mapping in mappings)
+            List<InterfaceMethodInfo> mappings = GetInterfaceMethodInfos(interfaceType);
+            foreach (InterfaceMethodInfo mapping in mappings)
             {
                 MethodInfo methodInfo;
                 PropertyInfo propertyInfo;
@@ -91,35 +91,35 @@ namespace ProxyMixin.Builders
             }
             return mappings;
         }
-        protected virtual void GenerateAddEvent(ILGenerator il, MethodInfoMapping mapping)
+        protected virtual void GenerateAddEvent(ILGenerator il, InterfaceMethodInfo mapping)
         {
             throw new NotImplementedException("GenerateAddEvent");
         }
-        protected virtual void GenerateGetIndexProperty(ILGenerator il, MethodInfoMapping mapping)
+        protected virtual void GenerateGetIndexProperty(ILGenerator il, InterfaceMethodInfo mapping)
         {
             throw new NotImplementedException("GenerateGetIndexProperty");
         }
-        protected virtual void GenerateGetProperty(ILGenerator il, MethodInfoMapping mapping)
+        protected virtual void GenerateGetProperty(ILGenerator il, InterfaceMethodInfo mapping)
         {
             throw new NotImplementedException("GenerateGetProperty");
         }
-        protected virtual void GenerateMethod(ILGenerator il, MethodInfoMapping mapping)
+        protected virtual void GenerateMethod(ILGenerator il, InterfaceMethodInfo mapping)
         {
             throw new NotImplementedException("GenerateMethod");
         }
-        protected virtual void GenerateRemoveEvent(ILGenerator il, MethodInfoMapping mapping)
+        protected virtual void GenerateRemoveEvent(ILGenerator il, InterfaceMethodInfo mapping)
         {
             throw new NotImplementedException("GenerateRemoveEvent");
         }
-        protected virtual void GenerateSetIndexProperty(ILGenerator il, MethodInfoMapping mapping)
+        protected virtual void GenerateSetIndexProperty(ILGenerator il, InterfaceMethodInfo mapping)
         {
             throw new NotImplementedException("GenerateSetIndexProperty");
         }
-        protected virtual void GenerateSetProperty(ILGenerator il, MethodInfoMapping mapping)
+        protected virtual void GenerateSetProperty(ILGenerator il, InterfaceMethodInfo mapping)
         {
             throw new NotImplementedException("GenerateSetProperty");
         }
-        private static List<MethodInfoMapping> GetMethodInfoMapping(Type interfaceType)
+        private static List<InterfaceMethodInfo> GetInterfaceMethodInfos(Type interfaceType)
         {
             var props = interfaceType.GetProperties().Select(p => new
             {
@@ -142,9 +142,9 @@ namespace ProxyMixin.Builders
                 events.Select(e => e.setMethod)))).Where(m => m != null).ToList();
 
             return interfaceType.GetMethods().
-                Except(specMethods).Select(m => new MethodInfoMapping(m, null, null)).Union(
-                props.Select(p => new MethodInfoMapping(p.memberInfo, p.getMethod, p.setMethod)).Union(
-                events.Select(e => new MethodInfoMapping(e.memberInfo, e.getMethod, e.setMethod)))).ToList();
+                Except(specMethods).Select(m => new InterfaceMethodInfo(m, null, null)).Union(
+                props.Select(p => new InterfaceMethodInfo(p.memberInfo, p.getMethod, p.setMethod)).Union(
+                events.Select(e => new InterfaceMethodInfo(e.memberInfo, e.getMethod, e.setMethod)))).ToList();
         }
 
         protected TypeBuilder TypeBuilder
