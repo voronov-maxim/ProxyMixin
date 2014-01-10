@@ -28,30 +28,30 @@ namespace ConsoleTest
         {
         }
 
-        protected override Object GetIndexProperty(MethodInfoInvoker invoker, MethodInfoInvokerParameters parameters)
+        protected override Object GetIndexProperty(MethodInfoInvoker invoker, IMethodInfoInvokerParameters parameters)
         {
             Object result = invoker.Invoke(parameters);
             LogHelper.GetIndexProperty((PropertyInfo)_mappings.FindByTargetMethod(invoker.MethodInfo).ParentMember, parameters, result);
             return result;
         }
-        protected override Object GetProperty(MethodInfoInvoker invoker, MethodInfoInvokerParameters parameters)
+        protected override Object GetProperty(MethodInfoInvoker invoker, IMethodInfoInvokerParameters parameters)
         {
             Object result = invoker.Invoke(parameters);
             LogHelper.GetProperty((PropertyInfo)_mappings.FindByTargetMethod(invoker.MethodInfo).ParentMember, result);
             return result;
         }
-        protected override Object Invoke(MethodInfoInvoker invoker, MethodInfoInvokerParameters parameters)
+        protected override Object Invoke(MethodInfoInvoker invoker, IMethodInfoInvokerParameters parameters)
         {
             Object result = invoker.Invoke(parameters);
             LogHelper.Invoke(invoker, parameters, result);
             return result;
         }
-        protected override void SetIndexProperty(MethodInfoInvoker invoker, MethodInfoInvokerParameters parameters)
+        protected override void SetIndexProperty(MethodInfoInvoker invoker, IMethodInfoInvokerParameters parameters)
         {
             invoker.Invoke(parameters);
             LogHelper.SetIndexProperty((PropertyInfo)_mappings.FindByTargetMethod(invoker.MethodInfo).ParentMember, parameters);
         }
-        protected override void SetProperty(MethodInfoInvoker invoker, MethodInfoInvokerParameters parameters)
+        protected override void SetProperty(MethodInfoInvoker invoker, IMethodInfoInvokerParameters parameters)
         {
             invoker.Invoke(parameters);
             LogHelper.SetProperty((PropertyInfo)_mappings.FindByTargetMethod(invoker.MethodInfo).ParentMember, parameters);
@@ -60,7 +60,7 @@ namespace ConsoleTest
 
     public static class LogHelper
     {
-        private static void Args(StringBuilder sb, MethodInfoInvokerParameters parameters)
+        private static void Args(StringBuilder sb, IMethodInfoInvokerParameters parameters)
         {
             for (int i = 0; i < parameters.ParameterCount; i++)
             {
@@ -69,7 +69,7 @@ namespace ConsoleTest
                     sb.Append(", ");
             }
         }
-        public static void GetIndexProperty(PropertyInfo propertyInfo, MethodInfoInvokerParameters parameters, Object result)
+        public static void GetIndexProperty(PropertyInfo propertyInfo, IMethodInfoInvokerParameters parameters, Object result)
         {
             var sb = new StringBuilder(propertyInfo.Name);
             sb.Append('[');
@@ -89,7 +89,7 @@ namespace ConsoleTest
 
             Trace.WriteLine(sb.ToString());
         }
-        public static void Invoke(MethodInfoInvoker invoker, MethodInfoInvokerParameters parameters, Object result)
+        public static void Invoke(MethodInfoInvoker invoker, IMethodInfoInvokerParameters parameters, Object result)
         {
             var sb = new StringBuilder(invoker.MethodInfo.Name);
             sb.Append('(');
@@ -106,7 +106,7 @@ namespace ConsoleTest
 
             Trace.WriteLine(sb.ToString());
         }
-        public static void SetIndexProperty(PropertyInfo propertyInfo, MethodInfoInvokerParameters parameters)
+        public static void SetIndexProperty(PropertyInfo propertyInfo, IMethodInfoInvokerParameters parameters)
         {
             var sb = new StringBuilder(propertyInfo.Name);
             sb.Append('[');
@@ -124,7 +124,7 @@ namespace ConsoleTest
 
             Trace.WriteLine(sb.ToString());
         }
-        public static void SetProperty(PropertyInfo propertyInfo, MethodInfoInvokerParameters parameters)
+        public static void SetProperty(PropertyInfo propertyInfo, IMethodInfoInvokerParameters parameters)
         {
             var sb = new StringBuilder(propertyInfo.Name);
             sb.Append(" = ");

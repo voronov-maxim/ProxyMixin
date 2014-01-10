@@ -47,7 +47,6 @@
     <Compile Include="exceptions.cs" />
     <Compile Include="MethodInfoInvokers\ActionMethodInfoInvoker.cs" />
     <Compile Include="MethodInfoInvokers\FuncMethodInfoInvoker.cs" />
-    <Compile Include="MethodInfoInvokers\GenericMethodInfoInvoker.cs" />
     <Compile Include="MethodInfoInvokers\IndirectInvoker.cs" />
     <Compile Include="MethodInfoInvokers\MethodInfoInvoker.cs" />
     <Compile Include="MethodInfoInvokers\MethodInfoInvokerParameters.cs" />

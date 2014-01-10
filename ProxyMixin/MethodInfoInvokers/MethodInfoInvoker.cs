@@ -14,7 +14,7 @@ namespace ProxyMixin.MethodInfoInvokers
         private readonly Delegate _invoker;
         private readonly MethodInfo _methodInfo;
 
-        public MethodInfoInvoker(MethodInfo methodInfo, IndirectInvoker indirectInvoker)
+        protected MethodInfoInvoker(MethodInfo methodInfo, IndirectInvoker indirectInvoker)
         {
             _methodInfo = methodInfo;
             if (methodInfo.IsFinal)
@@ -127,45 +127,45 @@ namespace ProxyMixin.MethodInfoInvokers
             }
             return invokerType.MakeGenericType(parameterTypes);
         }
-        public virtual MethodInfoInvokerParameters CreateParameters<P>(P target)
+        public static IMethodInfoInvokerParameters CreateParameters<P>(P target)
         {
-            throw new NotImplementedException();
+            return new MethodInfoInvokerParameters<P, Dummy, Dummy, Dummy, Dummy, Dummy, Dummy, Dummy, Dummy, Dummy>(target);
         }
-        public virtual MethodInfoInvokerParameters CreateParameters<P, P1>(P target, P1 p1)
+        public static IMethodInfoInvokerParameters CreateParameters<P, P1>(P target, P1 p1)
         {
-            throw new NotImplementedException();
+            return new MethodInfoInvokerParameters<P, P1, Dummy, Dummy, Dummy, Dummy, Dummy, Dummy, Dummy, Dummy>(target, p1);
         }
-        public virtual MethodInfoInvokerParameters CreateParameters<P, P1, P2>(P target, P1 p1, P2 p2)
+        public static IMethodInfoInvokerParameters CreateParameters<P, P1, P2>(P target, P1 p1, P2 p2)
         {
-            throw new NotImplementedException();
+            return new MethodInfoInvokerParameters<P, P1, P2, Dummy, Dummy, Dummy, Dummy, Dummy, Dummy, Dummy>(target, p1, p2);
         }
-        public virtual MethodInfoInvokerParameters CreateParameters<P, P1, P2, P3>(P target, P1 p1, P2 p2, P3 p3)
+        public static IMethodInfoInvokerParameters CreateParameters<P, P1, P2, P3>(P target, P1 p1, P2 p2, P3 p3)
         {
-            throw new NotImplementedException();
+            return new MethodInfoInvokerParameters<P, P1, P2, P3, Dummy, Dummy, Dummy, Dummy, Dummy, Dummy>(target, p1, p2, p3);
         }
-        public virtual MethodInfoInvokerParameters CreateParameters<P, P1, P2, P3, P4>(P target, P1 p1, P2 p2, P3 p3, P4 p4)
+        public static IMethodInfoInvokerParameters CreateParameters<P, P1, P2, P3, P4>(P target, P1 p1, P2 p2, P3 p3, P4 p4)
         {
-            throw new NotImplementedException();
+            return new MethodInfoInvokerParameters<P, P1, P2, P3, P4, Dummy, Dummy, Dummy, Dummy, Dummy>(target, p1, p2, p3, p4);
         }
-        public virtual MethodInfoInvokerParameters CreateParameters<P, P1, P2, P3, P4, P5>(P target, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+        public static IMethodInfoInvokerParameters CreateParameters<P, P1, P2, P3, P4, P5>(P target, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
         {
-            throw new NotImplementedException();
+            return new MethodInfoInvokerParameters<P, P1, P2, P3, P4, P5, Dummy, Dummy, Dummy, Dummy>(target, p1, p2, p3, p4, p5);
         }
-        public virtual MethodInfoInvokerParameters CreateParameters<P, P1, P2, P3, P4, P5, P6>(P target, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+        public static IMethodInfoInvokerParameters CreateParameters<P, P1, P2, P3, P4, P5, P6>(P target, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
         {
-            throw new NotImplementedException();
+            return new MethodInfoInvokerParameters<P, P1, P2, P3, P4, P5, P6, Dummy, Dummy, Dummy>(target, p1, p2, p3, p4, p5, p6);
         }
-        public virtual MethodInfoInvokerParameters CreateParameters<P, P1, P2, P3, P4, P5, P6, P7>(P target, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7)
+        public static IMethodInfoInvokerParameters CreateParameters<P, P1, P2, P3, P4, P5, P6, P7>(P target, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7)
         {
-            throw new NotImplementedException();
+            return new MethodInfoInvokerParameters<P, P1, P2, P3, P4, P5, P6, P7, Dummy, Dummy>(target, p1, p2, p3, p4, p5, p6, p7);
         }
-        public virtual MethodInfoInvokerParameters CreateParameters<P, P1, P2, P3, P4, P5, P6, P7, P8>(P target, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8)
+        public static IMethodInfoInvokerParameters CreateParameters<P, P1, P2, P3, P4, P5, P6, P7, P8>(P target, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8)
         {
-            throw new NotImplementedException();
+            return new MethodInfoInvokerParameters<P, P1, P2, P3, P4, P5, P6, P7, P8, Dummy>(target, p1, p2, p3, p4, p5, p6, p7, p8);
         }
-        public virtual MethodInfoInvokerParameters CreateParameters<P, P1, P2, P3, P4, P5, P6, P7, P8, P9>(P target, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9)
+        public static IMethodInfoInvokerParameters CreateParameters<P, P1, P2, P3, P4, P5, P6, P7, P8, P9>(P target, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9)
         {
-            throw new NotImplementedException();
+            return new MethodInfoInvokerParameters<P, P1, P2, P3, P4, P5, P6, P7, P8, P9>(target, p1, p2, p3, p4, p5, p6, p7, p8, p9);
         }
         public static MethodInfo GetCreateParametersMethodInfo(MethodInfo methodInfo, Type targetType)
         {
@@ -181,7 +181,7 @@ namespace ProxyMixin.MethodInfoInvokers
 
             throw new InvalidOperationException("CreateParameters not found");
         }
-        public abstract Object Invoke(MethodInfoInvokerParameters parameters);
+        public abstract Object Invoke(IMethodInfoInvokerParameters parameters);
 
         protected Delegate Invoker
         {
