@@ -1,7 +1,7 @@
-﻿using ProxyMixin;
+﻿using InvokeMethodInfo;
+using ProxyMixin;
 using ProxyMixin.Builders;
 using ProxyMixin.Ctors;
-using ProxyMixin.MethodInfoInvokers;
 using ProxyMixin.Mixins;
 using System;
 using System.Collections.Generic;

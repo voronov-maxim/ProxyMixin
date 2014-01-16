@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,27 +30,20 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Builders\InterfaceMethodInfoMapping.cs" />
     <Compile Include="exceptions.cs" />
-    <Compile Include="MethodInfoInvokers\ActionMethodInfoInvoker.cs" />
-    <Compile Include="MethodInfoInvokers\FuncMethodInfoInvoker.cs" />
-    <Compile Include="MethodInfoInvokers\IndirectInvoker.cs" />
-    <Compile Include="MethodInfoInvokers\MethodInfoInvoker.cs" />
-    <Compile Include="MethodInfoInvokers\MethodInfoInvokerParameters.cs" />
     <Compile Include="Builders\ProxyMethodBuilder.cs" />
     <Compile Include="Builders\InterfaceMethodInfo.cs" />
     <Compile Include="Ctors\ChangeTrackingCtor.cs" />
@@ -72,7 +66,15 @@
     <Compile Include="Mappers\ProxyMapper.cs" />
     <Compile Include="Builders\ProxyBuilderHelper.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="MethodInfoInvokers\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\InvokeMethodInfo\InvokeMethodInfo.csproj">
+      <Project>{4eefc680-0b7c-4491-827e-56b2cf46e769}</Project>
+      <Name>InvokeMethodInfo</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

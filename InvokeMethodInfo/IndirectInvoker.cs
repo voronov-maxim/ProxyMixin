@@ -1,11 +1,10 @@
-﻿using ProxyMixin.Builders;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace ProxyMixin.MethodInfoInvokers
+namespace InvokeMethodInfo
 {
     public sealed class IndirectInvoker
     {
@@ -140,7 +139,10 @@ namespace ProxyMixin.MethodInfoInvokers
 
             Type[] parameterTypes = new Type[parameterInfos.Length];
             for (int i = 0; i < parameterTypes.Length; i++)
-                parameterTypes[i] = parameterInfos[i].ParameterType;
+            {
+                Type parameterType = parameterInfos[i].ParameterType;
+                parameterTypes[i] = parameterType.IsByRef ? typeof(IntPtr) : parameterType;
+            }
 
             return GetMetadata(methodInfo.ReturnType, parameterTypes.Length).CreateCarryingDelegate(methodInfo, parameterTypes);
         }
@@ -158,6 +160,22 @@ namespace ProxyMixin.MethodInfoInvokers
             else
                 return new ActionMetadata(ctor, invoker, carryingInvoker);
         }
+        private static void DefineCtor(TypeBuilder typeBuilder, FieldBuilder fieldBuilder)
+        {
+            var parameterTypes = new Type[] { fieldBuilder.FieldType };
+            ConstructorBuilder ctorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, parameterTypes);
+            ILGenerator il = ctorBuilder.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldarg_1);
+            il.Emit(OpCodes.Stfld, fieldBuilder);
+            il.Emit(OpCodes.Ret);
+
+            MethodBuilder createBuider = typeBuilder.DefineMethod("<Create>", MethodAttributes.Static | MethodAttributes.Public, typeBuilder, parameterTypes);
+            il = createBuider.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Newobj, ctorBuilder);
+            il.Emit(OpCodes.Ret);
+        }
         private Metadata DefineType(Type returnType, int paramCount)
         {
             int isFunc = returnType == typeof(void) ? 0 : 1;
@@ -173,7 +191,7 @@ namespace ProxyMixin.MethodInfoInvokers
             }
 
             FieldBuilder fieldBuilder = typeBuilder.DefineField("fptr", typeof(IntPtr), FieldAttributes.Private | FieldAttributes.InitOnly);
-            ProxyBuilderHelper.DefineCtor(typeBuilder, fieldBuilder);
+            DefineCtor(typeBuilder, fieldBuilder);
 
             MethodBuilder method = typeBuilder.DefineMethod(MethodName, MethodAttributes.Public | MethodAttributes.Static);
 

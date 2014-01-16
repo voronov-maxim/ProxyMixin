@@ -1,5 +1,5 @@
-﻿using ProxyMixin.Builders;
-using ProxyMixin.MethodInfoInvokers;
+﻿using InvokeMethodInfo;
+using ProxyMixin.Builders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,12 +70,14 @@ namespace ProxyMixin.Mixins
 
                 il.Emit(OpCodes.Ldsfld, fieldBuilder);
 
+                il.Emit(OpCodes.Ldsfld, fieldBuilder);
+
                 int parameterCount = interfaceInfo.GetParameters().Length + 1;
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Call, proxyObject.GetGetMethod());
                 for (int i = 1; i < parameterCount; i++)
                     il.Emit(OpCodes.Ldarg, i);
-                il.Emit(OpCodes.Call, createParametersInfo);
+                il.Emit(OpCodes.Callvirt, createParametersInfo);
                 il.Emit(OpCodes.Call, invokeInfo);
 
                 if (interfaceInfo.ReturnType == typeof(void))

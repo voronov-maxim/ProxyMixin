@@ -1,6 +1,6 @@
-﻿using ProxyMixin.Builders;
+﻿using InvokeMethodInfo;
+using ProxyMixin.Builders;
 using ProxyMixin.Mappers;
-using ProxyMixin.MethodInfoInvokers;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
