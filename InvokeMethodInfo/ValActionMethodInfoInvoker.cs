@@ -8,7 +8,7 @@ namespace InvokeMethodInfo
     {
         private readonly Action<T> _action;
 
-        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _action = (Action<T>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -36,7 +36,7 @@ namespace InvokeMethodInfo
     {
         private readonly Action<T, T1> _action;
 
-        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _action = (Action<T, T1>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -64,7 +64,7 @@ namespace InvokeMethodInfo
     {
         private readonly Action<T, T1, T2> _action;
 
-        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _action = (Action<T, T1, T2>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -92,7 +92,7 @@ namespace InvokeMethodInfo
     {
         private readonly Action<T, T1, T2, T3> _action;
 
-        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _action = (Action<T, T1, T2, T3>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -120,7 +120,7 @@ namespace InvokeMethodInfo
     {
         private readonly Action<T, T1, T2, T3, T4> _action;
 
-        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _action = (Action<T, T1, T2, T3, T4>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -148,7 +148,7 @@ namespace InvokeMethodInfo
     {
         private readonly Action<T, T1, T2, T3, T4, T5> _action;
 
-        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _action = (Action<T, T1, T2, T3, T4, T5>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -176,7 +176,7 @@ namespace InvokeMethodInfo
     {
         private readonly Action<T, T1, T2, T3, T4, T5, T6> _action;
 
-        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _action = (Action<T, T1, T2, T3, T4, T5, T6>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -204,7 +204,7 @@ namespace InvokeMethodInfo
     {
         private readonly Action<T, T1, T2, T3, T4, T5, T6, T7> _action;
 
-        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _action = (Action<T, T1, T2, T3, T4, T5, T6, T7>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -232,7 +232,7 @@ namespace InvokeMethodInfo
     {
         private readonly Action<T, T1, T2, T3, T4, T5, T6, T7, T8> _action;
 
-        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _action = (Action<T, T1, T2, T3, T4, T5, T6, T7, T8>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -260,7 +260,7 @@ namespace InvokeMethodInfo
     {
         private readonly Action<T, T1, T2, T3, T4, T5, T6, T7, T8, T9> _action;
 
-        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValActionMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _action = (Action<T, T1, T2, T3, T4, T5, T6, T7, T8, T9>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);

@@ -7,7 +7,7 @@ namespace InvokeMethodInfo
     {
         private readonly Func<T, TResult> _func;
 
-        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _func = (Func<T, TResult>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -33,7 +33,7 @@ namespace InvokeMethodInfo
     {
         private readonly Func<T, T1, TResult> _func;
 
-        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _func = (Func<T, T1, TResult>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -59,7 +59,7 @@ namespace InvokeMethodInfo
     {
         private readonly Func<T, T1, T2, TResult> _func;
 
-        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _func = (Func<T, T1, T2, TResult>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -85,7 +85,7 @@ namespace InvokeMethodInfo
     {
         private readonly Func<T, T1, T2, T3, TResult> _func;
 
-        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _func = (Func<T, T1, T2, T3, TResult>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -111,7 +111,7 @@ namespace InvokeMethodInfo
     {
         private readonly Func<T, T1, T2, T3, T4, TResult> _func;
 
-        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _func = (Func<T, T1, T2, T3, T4, TResult>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -137,7 +137,7 @@ namespace InvokeMethodInfo
     {
         private readonly Func<T, T1, T2, T3, T4, T5, TResult> _func;
 
-        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _func = (Func<T, T1, T2, T3, T4, T5, TResult>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -163,7 +163,7 @@ namespace InvokeMethodInfo
     {
         private readonly Func<T, T1, T2, T3, T4, T5, T6, TResult> _func;
 
-        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _func = (Func<T, T1, T2, T3, T4, T5, T6, TResult>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -189,7 +189,7 @@ namespace InvokeMethodInfo
     {
         private readonly Func<T, T1, T2, T3, T4, T5, T6, T7, TResult> _func;
 
-        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _func = (Func<T, T1, T2, T3, T4, T5, T6, T7, TResult>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -215,7 +215,7 @@ namespace InvokeMethodInfo
     {
         private readonly Func<T, T1, T2, T3, T4, T5, T6, T7, T8, TResult> _func;
 
-        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _func = (Func<T, T1, T2, T3, T4, T5, T6, T7, T8, TResult>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);
@@ -241,7 +241,7 @@ namespace InvokeMethodInfo
     {
         private readonly Func<T, T1, T2, T3, T4, T5, T6, T7, T8, T9, TResult> _func;
 
-        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        public ValFuncMethodInfoInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
             : base(methodDef.MethodInfo)
         {
             _func = (Func<T, T1, T2, T3, T4, T5, T6, T7, T8, T9, TResult>)MethodInfoInvoker.CreateInvoker(methodDef, indirectInvoker);

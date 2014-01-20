@@ -6,12 +6,13 @@ using System.Reflection.Emit;
 
 namespace InvokeMethodInfo
 {
-    public sealed class IndirectInvoker
+    public abstract class IndirectInvokerBuilder
     {
-        private const String MethodName = "Invoke";
-        private const String CarryingMethodName = "CarryingInvoke";
+        protected const String CarryingMethodName = "CarryingInvoke";
+        protected const int MaxParameterCount = 10;
+        protected const String MethodName = "Invoke";
 
-        private abstract class Metadata
+        protected abstract class Metadata
         {
             private readonly MethodInfo _carryingInvoker;
             public readonly Func<IntPtr, Object> _ctor;
@@ -26,19 +27,16 @@ namespace InvokeMethodInfo
 
             public abstract Delegate CreateCarryingDelegate(MethodInfo methodInfo, Type[] parameterTypes);
             public abstract Delegate CreateDelegate(Type declaringType, Type returnType, Type[] parameterTypes);
+            public Object CreateClosure(IntPtr target)
+            {
+                return _ctor(target);
+            }
 
             public MethodInfo CarryingInvoker
             {
                 get
                 {
                     return _carryingInvoker;
-                }
-            }
-            public Func<IntPtr, Object> Ctor
-            {
-                get
-                {
-                    return _ctor;
                 }
             }
             public MethodInfo Invoker
@@ -50,7 +48,7 @@ namespace InvokeMethodInfo
             }
         }
 
-        private sealed class ActionMetadata : Metadata
+        protected sealed class ActionMetadata : Metadata
         {
             public ActionMetadata(Func<IntPtr, Object> ctor, MethodInfo invoker, MethodInfo carryingInvoker)
                 : base(ctor, invoker, carryingInvoker)
@@ -65,7 +63,7 @@ namespace InvokeMethodInfo
                 MethodInfo closeMethod = base.CarryingInvoker.MakeGenericMethod(genericTypes);
 
                 Type delegateType = Expression.GetActionType(genericTypes);
-                Object target = base.Ctor(methodInfo.MethodHandle.GetFunctionPointer());
+                Object target = base.CreateClosure(methodInfo.MethodHandle.GetFunctionPointer());
                 return Delegate.CreateDelegate(delegateType, target, closeMethod);
             }
             public override Delegate CreateDelegate(Type declaringType, Type returnType, Type[] parameterTypes)
@@ -84,7 +82,7 @@ namespace InvokeMethodInfo
             }
         }
 
-        private sealed class FuncMetadata : Metadata
+        protected sealed class FuncMetadata : Metadata
         {
             public FuncMetadata(Func<IntPtr, Object> ctor, MethodInfo invoker, MethodInfo carryingInvoker)
                 : base(ctor, invoker, carryingInvoker)
@@ -100,7 +98,7 @@ namespace InvokeMethodInfo
                 MethodInfo closeMethod = base.CarryingInvoker.MakeGenericMethod(genericTypes);
 
                 Type delegateType = Expression.GetFuncType(genericTypes);
-                Object target = base.Ctor(methodInfo.MethodHandle.GetFunctionPointer());
+                Object target = base.CreateClosure(methodInfo.MethodHandle.GetFunctionPointer());
                 return Delegate.CreateDelegate(delegateType, target, closeMethod);
             }
             public override Delegate CreateDelegate(Type declaringType, Type returnType, Type[] parameterTypes)
@@ -120,23 +118,17 @@ namespace InvokeMethodInfo
             }
         }
 
-        private readonly Metadata[] _actionMetadatas;
-        private readonly Metadata[] _funcMetadatas;
-        private readonly ModuleBuilder _moduleBuilder;
-
-        public IndirectInvoker(ModuleBuilder moduleBuilder)
+        public static IndirectInvokerBuilder Create()
         {
-            _moduleBuilder = moduleBuilder;
-            _actionMetadatas = new Metadata[10];
-            _funcMetadatas = new Metadata[10];
+            return new StaticIndirectInvokerBuilder();
         }
-
+        public static IndirectInvokerBuilder Create(ModuleBuilder moduleBuilder)
+        {
+            return new DynamicIndirectInvokerBuilder(moduleBuilder);
+        }
         public Delegate Create(MethodInfo methodInfo)
         {
             ParameterInfo[] parameterInfos = methodInfo.GetParameters();
-            if (parameterInfos.Length >= _actionMetadatas.Length)
-                throw new ArgumentOutOfRangeException("paramCount");
-
             Type[] parameterTypes = new Type[parameterInfos.Length];
             for (int i = 0; i < parameterTypes.Length; i++)
             {
@@ -150,47 +142,98 @@ namespace InvokeMethodInfo
         {
             return GetMetadata(returnType, parameterTypes.Length).CreateDelegate(declaringType, returnType, parameterTypes);
         }
-        private static Metadata CreateMetadata(Type invokerType, bool isFunc)
+        protected static Metadata CreateMetadata(Type closureType, bool isAction)
         {
-            var ctor = (Func<IntPtr, Object>)Delegate.CreateDelegate(typeof(Func<IntPtr, Object>), invokerType.GetMethod("<Create>"));
-            MethodInfo invoker = invokerType.GetMethod(MethodName);
-            MethodInfo carryingInvoker = invokerType.GetMethod(CarryingMethodName);
-            if (isFunc)
-                return new FuncMetadata(ctor, invoker, carryingInvoker);
-            else
+            var ctor = (Func<IntPtr, Object>)Delegate.CreateDelegate(typeof(Func<IntPtr, Object>), closureType.GetMethod("Create"));
+            MethodInfo invoker = closureType.GetMethod(MethodName);
+            MethodInfo carryingInvoker = closureType.GetMethod(CarryingMethodName);
+            if (isAction)
                 return new ActionMetadata(ctor, invoker, carryingInvoker);
+            else
+                return new FuncMetadata(ctor, invoker, carryingInvoker);
         }
+        protected abstract Metadata GetMetadata(Type returnType, int paramCount);
+        public MethodInfo GetMethodInfo(Type returnType, int paramCount)
+        {
+            return GetMetadata(returnType, paramCount).Invoker;
+        }
+        protected static String GetClosureClassName(bool isAction, int parameterCount)
+        {
+            return "CallMethodPointer.IndirectInvoker" + (isAction ? "Action" : "Func") + parameterCount.ToString();
+        }
+    }
+
+    internal sealed class StaticIndirectInvokerBuilder : IndirectInvokerBuilder
+    {
+        private readonly Metadata[] _actionMetadatas;
+        private readonly Type[] _closureTypes;
+        private readonly Metadata[] _funcMetadatas;
+
+        public StaticIndirectInvokerBuilder()
+        {
+            _actionMetadatas = new Metadata[MaxParameterCount];
+            _funcMetadatas = new Metadata[MaxParameterCount];
+            _closureTypes = typeof(CallMethodPointer.IndirectInvokerAction0).Assembly.GetTypes();
+        }
+
+        protected override Metadata GetMetadata(Type returnType, int paramCount)
+        {
+            if (paramCount >= MaxParameterCount)
+                throw new ArgumentOutOfRangeException("paramCount");
+
+            bool isAction = returnType == typeof(void);
+            Metadata[] metadatas = isAction ? _actionMetadatas : _funcMetadatas;
+            if (metadatas[paramCount] == null)
+                foreach (Type closureType in _closureTypes)
+                    if (closureType.Name == GetClosureClassName(isAction, paramCount))
+                    {
+                        metadatas[paramCount] = CreateMetadata(closureType, isAction);
+                        break;
+                    }
+            return metadatas[paramCount];
+        }
+    }
+
+    internal sealed class DynamicIndirectInvokerBuilder : IndirectInvokerBuilder
+    {
+        private readonly Metadata[] _actionMetadatas;
+        private readonly Metadata[] _funcMetadatas;
+        private readonly ModuleBuilder _moduleBuilder;
+
+        public DynamicIndirectInvokerBuilder(ModuleBuilder moduleBuilder)
+        {
+            _moduleBuilder = moduleBuilder;
+            _actionMetadatas = new Metadata[MaxParameterCount];
+            _funcMetadatas = new Metadata[MaxParameterCount];
+        }
+
         private static void DefineCtor(TypeBuilder typeBuilder, FieldBuilder fieldBuilder)
         {
             var parameterTypes = new Type[] { fieldBuilder.FieldType };
             ConstructorBuilder ctorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, parameterTypes);
+            ctorBuilder.DefineParameter(1, ParameterAttributes.None, fieldBuilder.Name);
+
             ILGenerator il = ctorBuilder.GetILGenerator();
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Ldarg_1);
             il.Emit(OpCodes.Stfld, fieldBuilder);
             il.Emit(OpCodes.Ret);
 
-            MethodBuilder createBuider = typeBuilder.DefineMethod("<Create>", MethodAttributes.Static | MethodAttributes.Public, typeBuilder, parameterTypes);
+            MethodBuilder createBuider = typeBuilder.DefineMethod("Create", MethodAttributes.Static | MethodAttributes.Public, typeBuilder, parameterTypes);
+            createBuider.DefineParameter(1, ParameterAttributes.None, fieldBuilder.Name);
+
             il = createBuider.GetILGenerator();
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Newobj, ctorBuilder);
             il.Emit(OpCodes.Ret);
         }
-        private Metadata DefineType(Type returnType, int paramCount)
+        private static Metadata DefineType(ModuleBuilder moduleBuilder, Type returnType, int paramCount)
         {
             int isFunc = returnType == typeof(void) ? 0 : 1;
-            String typeName = "IndirectInvoker" + (isFunc == 0 ? "Action" : "Func") + paramCount.ToString();
-            TypeBuilder typeBuilder;
-            try
-            {
-                typeBuilder = _moduleBuilder.DefineType(typeName, TypeAttributes.Public | TypeAttributes.Sealed);
-            }
-            catch (ArgumentException)
-            {
-                throw new TypeExistException(typeName);
-            }
+            String typeName = GetClosureClassName(isFunc == 0, paramCount);
+            TypeBuilder typeBuilder = moduleBuilder.DefineType(typeName, TypeAttributes.Public | TypeAttributes.Sealed);
 
-            FieldBuilder fieldBuilder = typeBuilder.DefineField("fptr", typeof(IntPtr), FieldAttributes.Private | FieldAttributes.InitOnly);
+            FieldBuilder fieldBuilder = typeBuilder.DefineField("methodPointer", typeof(IntPtr), FieldAttributes.Private | FieldAttributes.InitOnly);
             DefineCtor(typeBuilder, fieldBuilder);
 
             MethodBuilder method = typeBuilder.DefineMethod(MethodName, MethodAttributes.Public | MethodAttributes.Static);
@@ -218,6 +261,10 @@ namespace InvokeMethodInfo
             method.SetParameters(parameters);
             method.SetReturnType(returnType);
 
+            method.DefineParameter(1, ParameterAttributes.None, "target");
+            for (int i = 1; i < parameters.Length; i++)
+                method.DefineParameter(i + 1, ParameterAttributes.None, "p" + i.ToString());
+
             ILGenerator il = method.GetILGenerator();
             for (int i = 0; i < targetParameters.Length; i++)
                 il.Emit(OpCodes.Ldarg, i + 1);
@@ -231,6 +278,9 @@ namespace InvokeMethodInfo
             methodCarrying.SetParameters(targetParameters);
             methodCarrying.SetReturnType(returnType);
 
+            for (int i = 0; i < targetParameters.Length; i++)
+                methodCarrying.DefineParameter(i + 1, ParameterAttributes.None, "p" + (i + 1).ToString());
+
             il = methodCarrying.GetILGenerator();
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Ldfld, fieldBuilder);
@@ -239,31 +289,28 @@ namespace InvokeMethodInfo
             il.Emit(OpCodes.Call, method);
             il.Emit(OpCodes.Ret);
 
-            return CreateMetadata(typeBuilder.CreateType(), isFunc != 0);
+            return CreateMetadata(typeBuilder.CreateType(), isFunc == 0);
         }
-        private Metadata GetMetadata(Type returnType, int paramCount)
+        protected override Metadata GetMetadata(Type returnType, int paramCount)
         {
-            Metadata[] metadatas = returnType == typeof(void) ? _actionMetadatas : _funcMetadatas;
-            if (paramCount >= metadatas.Length)
+            if (paramCount >= MaxParameterCount)
                 throw new ArgumentOutOfRangeException("paramCount");
 
+            bool isAction = returnType == typeof(void);
+            Metadata[] metadatas = isAction ? _actionMetadatas : _funcMetadatas;
             if (metadatas[paramCount] == null)
             {
                 try
                 {
-                    metadatas[paramCount] = DefineType(returnType, paramCount);
+                    metadatas[paramCount] = DefineType(_moduleBuilder, returnType, paramCount);
                 }
-                catch (TypeExistException e)
+                catch (ArgumentException)
                 {
-                    Type invokerType = _moduleBuilder.GetType(e.TypeName);
-                    metadatas[paramCount] = CreateMetadata(invokerType, returnType != typeof(void));
+                    Type closureType = _moduleBuilder.GetType(GetClosureClassName(isAction, paramCount));
+                    metadatas[paramCount] = CreateMetadata(closureType, isAction);
                 }
             }
             return metadatas[paramCount];
-        }
-        public MethodInfo GetMethodInfo(Type returnType, int paramCount)
-        {
-            return GetMetadata(returnType, paramCount).Invoker;
         }
     }
 }

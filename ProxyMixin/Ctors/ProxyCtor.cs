@@ -64,7 +64,7 @@ namespace ProxyMixin
         }
 
         private static int _counter;
-        private static IndirectInvoker _indirectInvoker;
+        private static IndirectInvokerBuilder _indirectInvoker;
         private static ModuleBuilder _moduleBuilder;
         private static readonly Dictionary<ProxyTypeDef, Type> _typeProxyCache = new Dictionary<ProxyTypeDef, Type>();
         private static readonly Dictionary<Type, Delegate> _interfaceInvokerCache = new Dictionary<Type, Delegate>();
@@ -130,13 +130,25 @@ namespace ProxyMixin
 
             return ctor(interfaceObject);
         }
+        public static AssemblyBuilder _zzz;
         public static ModuleBuilder GetModuleBuilder()
         {
             if (_moduleBuilder == null)
             {
-                var asmName = new AssemblyName("DynamicProxyMixin, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
-                AssemblyBuilder asmBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.Run);
-                _moduleBuilder = asmBuilder.DefineDynamicModule(asmName.Name);
+                //var asmName = new AssemblyName("DynamicProxyMixin, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
+                //AssemblyBuilder asmBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.Run);
+                //_moduleBuilder = asmBuilder.DefineDynamicModule(asmName.Name);
+
+                Type daType = typeof(System.Diagnostics.DebuggableAttribute);
+                ConstructorInfo daCtor = daType.GetConstructor(new Type[] { typeof(System.Diagnostics.DebuggableAttribute.DebuggingModes) });
+                CustomAttributeBuilder daBuilder = new CustomAttributeBuilder(daCtor, new object[] { 
+            System.Diagnostics.DebuggableAttribute.DebuggingModes.IgnoreSymbolStoreSequencePoints });
+
+                var asmName = new AssemblyName("CallMethodPointer.dll, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
+                AssemblyBuilder asmBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.RunAndSave, @"D:\zzz");
+                //asmBuilder.SetCustomAttribute(daBuilder);
+                _moduleBuilder = asmBuilder.DefineDynamicModule(asmName.Name, asmName.Name);
+                _zzz = asmBuilder;
             }
             return _moduleBuilder;
         }
@@ -147,12 +159,12 @@ namespace ProxyMixin
             return moduleBuilder.DefineType(name, TypeAttributes.Class | TypeAttributes.Sealed, typeof(T));
         }
 
-        public static IndirectInvoker IndirectInvoker
+        public static IndirectInvokerBuilder IndirectInvoker
         {
             get
             {
                 if (_indirectInvoker == null)
-                    _indirectInvoker = new IndirectInvoker(GetModuleBuilder());
+                    _indirectInvoker = IndirectInvokerBuilder.Create();
                 return _indirectInvoker;
             }
         }

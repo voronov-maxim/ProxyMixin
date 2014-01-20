@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E752CE35-C8D7-4BC7-AC84-CA7B8FE9D87E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CallMethodPointer</RootNamespace>
+    <AssemblyName>CallMethodPointer</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BuildDependsOn>
+      PrintIntermediateAssemblyName;
+      $(BuildDependsOn);
+      PrintIntermediateAssemblyName
+    </BuildDependsOn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <qwerty>@(IntermediateAssembly)</qwerty>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="CallMethodPointer.il">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Properties\AssemblyInfo.cs" />
+    <!--<AddModules Include="D:\zzz\CallMethodPointer.netmodule" />-->
+  </ItemGroup>
+  
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="BeforeBuild">
+    <Message Text="Intermediate assembly name: @(IntermediateAssembly)" />
+    <Message Text="Int assm full path: $(MSBuildProjectDirectory)\@(IntermediateAssembly)"/>
+    <Message Text="Zzz = $(MSBuildProjectDirectory)\$(IntermediateOutputPath)qqq"/>
+    <Message Text="Qwerty =  $(IntermediateOutputPath)CallMethodPointer.dll"/>
+    <Message Text="CoreBuildDependsOn"/>
+    <Message Text="$(CoreBuildDependsOn)"/>
+  </Target>
+  
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+  <Target Name="CreateManifestResourceNames" />
+  <Target Name="CoreCompile" Inputs="$(MSBuildAllProjects);@(Compile);" Outputs="$(Qwerty);$(NonExistentFile);">
+    <GetFrameworkPath>
+      <Output TaskParameter="Path" PropertyName="FrameworkPath" />
+    </GetFrameworkPath>
+    <PropertyGroup>
+      <IlAsmCommand>"$(FrameworkPath)\Ilasm.exe" /NOLOGO /DLL /OUTPUT:$(Qwerty) </IlAsmCommand>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <IlAsmCommand>$(IlAsmCommand) /DEBUG </IlAsmCommand>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <IlAsmCommand>$(IlAsmCommand) /OPTIMIZE </IlAsmCommand>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(AssemblyOriginatorKeyFile)' != '' ">
+      <IlAsmCommand>$(IlAsmCommand) /KEY:"$(AssemblyOriginatorKeyFile)" </IlAsmCommand>
+    </PropertyGroup>
+    <!--<Exec Command="$(IlAsmCommand) @(Compile->'&quot;%(FullPath)&quot;', ' ')" Outputs="$(MSBuildProjectDirectory)\$(IntermediateOutputPath)CallMethodPointer.dll" />-->
+    <Exec Command="$(IlAsmCommand) $(MSBuildProjectDirectory)\CallMethodPointer.il" Outputs="$(Qwerty)" />
+    
+  <CallTarget Targets="$(TargetsTriggeredByCompilation)" Condition="'$(TargetsTriggeredByCompilation)' != ''" />
+  
+  </Target>
+</Project>

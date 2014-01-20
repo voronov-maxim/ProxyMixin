@@ -23,7 +23,7 @@ namespace ConsoleTest
         {
             _mappings = InterfaceMethodInfoMappingCollection.Create(typeof(I), typeof(T));
         }
-        public LoggerMixin(IndirectInvoker indirectInvoker)
+        public LoggerMixin(IndirectInvokerBuilder indirectInvoker)
             : base(indirectInvoker)
         {
         }

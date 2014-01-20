@@ -32,12 +32,15 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CallMethodPointer, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\CallMethodPointer\bin\Release\CallMethodPointer.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DelegateBuilderHelper.cs" />
-    <Compile Include="exceptions.cs" />
-    <Compile Include="IndirectInvoker.cs" />
+    <Compile Include="IndirectInvokerBuilder.cs" />
     <Compile Include="MethodDef.cs" />
     <Compile Include="MethodInfoInvoker.cs" />
     <Compile Include="MethodInfoInvokerParameters.cs" />

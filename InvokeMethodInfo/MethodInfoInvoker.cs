@@ -18,7 +18,7 @@ namespace InvokeMethodInfo
             _methodInfo = methodInfo;
         }
 
-        public static MethodInfoInvoker Create(MethodInfo methodInfo, IndirectInvoker indirectInvoker)
+        public static MethodInfoInvoker Create(MethodInfo methodInfo, IndirectInvokerBuilder indirectInvoker)
         {
             var methodDef = new MethodDef(methodInfo);
 
@@ -38,7 +38,7 @@ namespace InvokeMethodInfo
                     invokerType = DelegateBuilderHelper.CreateValFuncType(methodDef);
             }
 
-            var types = new Type[] { typeof(MethodDef), typeof(IndirectInvoker) };
+            var types = new Type[] { typeof(MethodDef), typeof(IndirectInvokerBuilder) };
             return (MethodInfoInvoker)invokerType.GetConstructor(types).Invoke(new Object[] { methodDef, indirectInvoker });
         }
         private static Delegate CreateDelegate(MethodDef methodDef)
@@ -48,7 +48,7 @@ namespace InvokeMethodInfo
             ConstructorInfo ctor = delegateType.GetConstructors()[0];
             return (Delegate)ctor.Invoke(new Object[] { null, functPtr });
         }
-        internal static Delegate CreateInvoker(MethodDef methodDef, IndirectInvoker indirectInvoker)
+        internal static Delegate CreateInvoker(MethodDef methodDef, IndirectInvokerBuilder indirectInvoker)
         {
             if (methodDef.MethodInfo.IsVirtual && !methodDef.MethodInfo.IsFinal)
                 return indirectInvoker.Create(methodDef.MethodInfo);

@@ -107,7 +107,7 @@ namespace ProxyMixin.Mixins
             }
         }
 
-        private readonly IndirectInvoker _indirectInvoker;
+        private readonly IndirectInvokerBuilder _indirectInvoker;
         private readonly Type[] _noImplementInterfaces;
         private IDynamicProxy _proxyObject;
 
@@ -115,7 +115,7 @@ namespace ProxyMixin.Mixins
         {
             _noImplementInterfaces = new Type[] { typeof(IMixinSource) };
         }
-        public InterceptorMixin(IndirectInvoker indirectInvoker)
+        public InterceptorMixin(IndirectInvokerBuilder indirectInvoker)
             : this()
         {
             _indirectInvoker = indirectInvoker;
