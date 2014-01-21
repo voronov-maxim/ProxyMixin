@@ -185,7 +185,7 @@ namespace InvokeMethodInfo
             Metadata[] metadatas = isAction ? _actionMetadatas : _funcMetadatas;
             if (metadatas[paramCount] == null)
                 foreach (Type closureType in _closureTypes)
-                    if (closureType.Name == GetClosureClassName(isAction, paramCount))
+                    if (closureType.FullName == GetClosureClassName(isAction, paramCount))
                     {
                         metadatas[paramCount] = CreateMetadata(closureType, isAction);
                         break;

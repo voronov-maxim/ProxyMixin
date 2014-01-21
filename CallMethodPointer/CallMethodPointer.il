@@ -3,19 +3,7 @@
 //  Copyright (c) Microsoft Corporation.  All rights reserved.
 
 
-
-// Metadata version: v4.0.30319
-.assembly extern mscorlib
-{
-  .publickeytoken = (B7 7A 5C 56 19 34 E0 89 )                         // .z\V.4..
-  .ver 4:0:0:0
-}
-.assembly CallMethodPointer.dll
-{
-  .hash algorithm 0x00008004
-  .ver 1:0:0:0
-}
-.module CallMethodPointer.dll
+.module CallMethodPointer.netmodule
 // MVID: {0783D9C3-F9DD-43CA-B300-508A1E4DB7B8}
 .imagebase 0x00400000
 .file alignment 0x00000200

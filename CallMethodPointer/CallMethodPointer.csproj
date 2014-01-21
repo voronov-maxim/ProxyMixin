@@ -29,44 +29,23 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <BuildDependsOn>
-      PrintIntermediateAssemblyName;
-      $(BuildDependsOn);
-      PrintIntermediateAssemblyName
-    </BuildDependsOn>
-  </PropertyGroup>
-  <PropertyGroup>
-    <qwerty>@(IntermediateAssembly)</qwerty>
-  </PropertyGroup>
-
   <ItemGroup>
     <None Include="CallMethodPointer.il">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Properties\AssemblyInfo.cs" />
-    <!--<AddModules Include="D:\zzz\CallMethodPointer.netmodule" />-->
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!--<Target Name="CreateManifestResourceNames" />-->
   <Target Name="BeforeBuild">
-    <Message Text="Intermediate assembly name: @(IntermediateAssembly)" />
-    <Message Text="Int assm full path: $(MSBuildProjectDirectory)\@(IntermediateAssembly)"/>
-    <Message Text="Zzz = $(MSBuildProjectDirectory)\$(IntermediateOutputPath)qqq"/>
-    <Message Text="Qwerty =  $(IntermediateOutputPath)CallMethodPointer.dll"/>
-    <Message Text="CoreBuildDependsOn"/>
-    <Message Text="$(CoreBuildDependsOn)"/>
-  </Target>
-  
-  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
-  <Target Name="CreateManifestResourceNames" />
-  <Target Name="CoreCompile" Inputs="$(MSBuildAllProjects);@(Compile);" Outputs="$(Qwerty);$(NonExistentFile);">
     <GetFrameworkPath>
       <Output TaskParameter="Path" PropertyName="FrameworkPath" />
     </GetFrameworkPath>
     <PropertyGroup>
-      <IlAsmCommand>"$(FrameworkPath)\Ilasm.exe" /NOLOGO /DLL /OUTPUT:$(Qwerty) </IlAsmCommand>
+      <IlAsmCommand>"$(FrameworkPath)\Ilasm.exe" /NOLOGO /DLL /OUTPUT:$(MSBuildProjectDirectory)\$(IntermediateOutputPath)CallMethodPointer.netmodule </IlAsmCommand>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
       <IlAsmCommand>$(IlAsmCommand) /DEBUG </IlAsmCommand>
@@ -74,13 +53,13 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
       <IlAsmCommand>$(IlAsmCommand) /OPTIMIZE </IlAsmCommand>
     </PropertyGroup>
-    <PropertyGroup Condition=" '$(AssemblyOriginatorKeyFile)' != '' ">
-      <IlAsmCommand>$(IlAsmCommand) /KEY:"$(AssemblyOriginatorKeyFile)" </IlAsmCommand>
-    </PropertyGroup>
-    <!--<Exec Command="$(IlAsmCommand) @(Compile->'&quot;%(FullPath)&quot;', ' ')" Outputs="$(MSBuildProjectDirectory)\$(IntermediateOutputPath)CallMethodPointer.dll" />-->
-    <Exec Command="$(IlAsmCommand) $(MSBuildProjectDirectory)\CallMethodPointer.il" Outputs="$(Qwerty)" />
-    
-  <CallTarget Targets="$(TargetsTriggeredByCompilation)" Condition="'$(TargetsTriggeredByCompilation)' != ''" />
-  
+    <Exec Command="$(IlAsmCommand) $(MSBuildProjectDirectory)\CallMethodPointer.il" Outputs="$(MSBuildProjectDirectory)\$(IntermediateOutputPath)CallMethodPointer.netmodule" />
+  </Target>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="Compile">
+    <Csc Sources="@(Compile)" AddModules="$(IntermediateOutputPath)CallMethodPointer.netmodule" OutputAssembly="$(IntermediateOutputPath)CallMethodPointer.dll" Optimize="$(Optimize)" TargetType="library" />
+  </Target>
+  <Target Name="AfterBuild">
+    <Copy SourceFiles="$(IntermediateOutputPath)CallMethodPointer.netmodule" DestinationFolder="$(OutputPath)" />
   </Target>
 </Project>
