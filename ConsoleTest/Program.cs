@@ -109,6 +109,7 @@ namespace ConsoleTest
         public static void Test3()
         {
             var ii = IndirectInvokerBuilder.Create();
+            //var ii = IndirectInvokerBuilder.Create(ProxyCtor.GetModuleBuilder());
             var sample = new Sample2();
             var isample = (ISample)sample;
             var mixin = new ProxyMixin.Mixins.InterceptorMixin<Sample2, ISample>(ProxyMixin.ProxyCtor.IndirectInvoker);

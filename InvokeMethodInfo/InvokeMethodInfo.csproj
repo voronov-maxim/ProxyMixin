@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>InvokeMethodInfo</RootNamespace>
     <AssemblyName>InvokeMethodInfo</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,10 +33,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CallMethodPointer, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\CallMethodPointer\bin\Release\CallMethodPointer.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
@@ -52,12 +49,27 @@
     <Compile Include="ValFuncMethodInfoInvoker.cs" />
     <Compile Include="ValMethodInfoInvokerParameters.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="CallMethodPointer.il" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
+
+  <Target Name="Compile">
+    <GetFrameworkPath>
+      <Output TaskParameter="Path" PropertyName="FrameworkPath" />
+    </GetFrameworkPath>
+    <PropertyGroup>
+      <ilasm>"$(FrameworkPath)\ilasm.exe" /nologo /dll /output:$(MSBuildProjectDirectory)\$(IntermediateOutputPath)CallMethodPointer.netmodule </ilasm>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <ilasm>$(ilasm) /pdb </ilasm>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <ilasm>$(ilasm) /optimize </ilasm>
+    </PropertyGroup>
+    <Exec Command="$(ilasm) $(MSBuildProjectDirectory)\CallMethodPointer.il" Outputs="$(MSBuildProjectDirectory)\$(IntermediateOutputPath)CallMethodPointer.netmodule" />
+    <Csc Sources="@(Compile)" AddModules="$(IntermediateOutputPath)CallMethodPointer.netmodule" OutputAssembly="@(IntermediateAssembly)"
+         Optimize="$(Optimize)" DebugType="$(DebugType)" TargetType="library" AllowUnsafeBlocks="$(AllowUnsafeBlocks)" />
+    <Copy SourceFiles="$(IntermediateOutputPath)CallMethodPointer.netmodule" DestinationFolder="$(OutputPath)" />
   </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

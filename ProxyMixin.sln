@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2013 for Windows Desktop
+# Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProxyMixin", "ProxyMixin\ProxyMixin.csproj", "{F6948064-1BB8-49C9-826A-C8FE1108D6E2}"
@@ -10,11 +10,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleTest", "ConsoleTest\ConsoleTest.csproj", "{3AD3B5A6-C2A3-49AF-85C3-0ACEA94C3A31}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvokeMethodInfo", "InvokeMethodInfo\InvokeMethodInfo.csproj", "{4EEFC680-0B7C-4491-827E-56B2CF46E769}"
-	ProjectSection(ProjectDependencies) = postProject
-		{E752CE35-C8D7-4BC7-AC84-CA7B8FE9D87E} = {E752CE35-C8D7-4BC7-AC84-CA7B8FE9D87E}
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CallMethodPointer", "CallMethodPointer\CallMethodPointer.csproj", "{E752CE35-C8D7-4BC7-AC84-CA7B8FE9D87E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,10 +33,6 @@ Global
 		{4EEFC680-0B7C-4491-827E-56B2CF46E769}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4EEFC680-0B7C-4491-827E-56B2CF46E769}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4EEFC680-0B7C-4491-827E-56B2CF46E769}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E752CE35-C8D7-4BC7-AC84-CA7B8FE9D87E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E752CE35-C8D7-4BC7-AC84-CA7B8FE9D87E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E752CE35-C8D7-4BC7-AC84-CA7B8FE9D87E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E752CE35-C8D7-4BC7-AC84-CA7B8FE9D87E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
