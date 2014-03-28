@@ -30,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
@@ -68,7 +69,9 @@
       <ilasm>$(ilasm) /optimize </ilasm>
     </PropertyGroup>
     <Exec Command="$(ilasm) $(MSBuildProjectDirectory)\CallMethodPointer.il" Outputs="$(MSBuildProjectDirectory)\$(IntermediateOutputPath)CallMethodPointer.netmodule" />
-    <Csc Sources="@(Compile)" AddModules="$(IntermediateOutputPath)CallMethodPointer.netmodule" OutputAssembly="@(IntermediateAssembly)"
+    
+    <Csc Platform="$(Platform)" DefineConstants="$(DefineConstants)" NoConfig="true" NoStandardLib="true" References="@(ReferencePath)" FileAlignment="$(FileAlignment)" Sources="@(Compile)"
+         AddModules="$(IntermediateOutputPath)CallMethodPointer.netmodule" OutputAssembly="@(IntermediateAssembly)"
          Optimize="$(Optimize)" DebugType="$(DebugType)" TargetType="library" AllowUnsafeBlocks="$(AllowUnsafeBlocks)" />
     <Copy SourceFiles="$(IntermediateOutputPath)CallMethodPointer.netmodule" DestinationFolder="$(OutputPath)" />
   </Target>
